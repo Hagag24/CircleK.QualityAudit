@@ -1,0 +1,32 @@
+﻿@inherits LayoutComponentBase
+<AuthorizeView>
+    <Authorized>
+        <div class="ck-shell" dir="@(IsRtl ? "rtl" : "ltr")">
+            <aside class="ck-sidebar" dir="@(IsRtl ? "rtl" : "ltr")">
+                <NavMenu />
+            </aside>
+
+            <div class="ck-main">
+                <header class="ck-topbar">
+                    <div class="ck-topbar-actions">
+                        <LanguageToggle />
+                        <AuthControls />
+                    </div>
+                </header>
+
+                <main class="ck-content">
+                    @Body
+                </main>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <main class="ck-public" dir="@(IsRtl ? "rtl" : "ltr")">
+            @Body
+        </main>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private bool IsRtl => System.Globalization.CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
+}

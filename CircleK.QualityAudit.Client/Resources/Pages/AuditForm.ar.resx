@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>نموذج الأوديت</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>أكمل الإجابات ثم قم بإرسال الأوديت.</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>رجوع</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>جاري التحميل...</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>الأوديت غير موجود.</value>
+  </data>
+  <data name="AuditInfo" xml:space="preserve">
+    <value>بيانات الأوديت</value>
+  </data>
+  <data name="Branch" xml:space="preserve">
+    <value>الفرع</value>
+  </data>
+  <data name="Template" xml:space="preserve">
+    <value>القالب</value>
+  </data>
+  <data name="Inspector" xml:space="preserve">
+    <value>المدقق</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>التاريخ</value>
+  </data>
+  <data name="CurrentEmployees" xml:space="preserve">
+    <value>عدد الموظفين أثناء الزيارة</value>
+  </data>
+  <data name="ScoreSummary" xml:space="preserve">
+    <value>ملخص النقاط</value>
+  </data>
+  <data name="CriticalFailed" xml:space="preserve">
+    <value>إخفاقات حرجة</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>إرسال الأوديت</value>
+  </data>
+  <data name="Submitting" xml:space="preserve">
+    <value>جاري الإرسال...</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>نعم</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>لا</value>
+  </data>
+  <data name="NA" xml:space="preserve">
+    <value>غير مطبق</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>ملاحظات</value>
+  </data>
+  <data name="SaveNotes" xml:space="preserve">
+    <value>حفظ الملاحظات</value>
+  </data>
+  <data name="Score" xml:space="preserve">
+    <value>النتيجة: {0}</value>
+  </data>
+  <data name="ItemsCount" xml:space="preserve">
+    <value>عدد البنود: {0}</value>
+  </data>
+  <data name="Critical" xml:space="preserve">
+    <value>حرج</value>
+  </data>
+  <data name="StatusDraft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="StatusSubmitted" xml:space="preserve">
+    <value>تم الإرسال</value>
+  </data>
+  <data name="RiskSafe" xml:space="preserve">
+    <value>آمن</value>
+  </data>
+  <data name="RiskWarning" xml:space="preserve">
+    <value>تحذير</value>
+  </data>
+  <data name="RiskDanger" xml:space="preserve">
+    <value>خطر</value>
+  </data>
+  <data name="SaveFailed" xml:space="preserve">
+    <value>تعذر حفظ الإجابة.</value>
+  </data>
+  <data name="SelectAnswerFirst" xml:space="preserve">
+    <value>اختر إجابة قبل حفظ الملاحظات.</value>
+  </data>
+  <data name="NotesSaved" xml:space="preserve">
+    <value>تم حفظ الملاحظات.</value>
+  </data>
+  <data name="SubmitSuccess" xml:space="preserve">
+    <value>تم إرسال الأوديت بنجاح.</value>
+  </data>
+  <data name="MissingAnswers" xml:space="preserve">
+    <value>عدد البنود غير المُجابة: {0}. يرجى إكمالها قبل الإرسال.</value>
+  </data>
+  <data name="SubmitFailed" xml:space="preserve">
+    <value>تعذر إرسال الأوديت.</value>
+  </data>
+  <data name="Wop" xml:space="preserve">
+    <value>WOP</value>
+  </data>
+  <data name="Timing" xml:space="preserve">
+    <value>التوقيت</value>
+  </data>
+  <data name="TimingStart" xml:space="preserve">
+    <value>ابدأ</value>
+  </data>
+  <data name="TimingStop" xml:space="preserve">
+    <value>إيقاف</value>
+  </data>
+  <data name="TimingRunning" xml:space="preserve">
+    <value>قيد التشغيل: {0}</value>
+  </data>
+  <data name="TimingCount" xml:space="preserve">
+    <value>عدد القياسات: {0}</value>
+  </data>
+  <data name="TimingAverage" xml:space="preserve">
+    <value>المتوسط: {0}</value>
+  </data>
+  <data name="TimingEmpty" xml:space="preserve">
+    <value>لا توجد قياسات وقت بعد.</value>
+  </data>
+  <data name="TimingSaveFailed" xml:space="preserve">
+    <value>تعذر حفظ قياس الوقت.</value>
+  </data>
+  <data name="PrintReport" xml:space="preserve">
+    <value>طباعة / PDF</value>
+  </data>
+  <data name="ExportExcel" xml:space="preserve">
+    <value>إكسل</value>
+  </data>
+  <data name="ExportCsv" xml:space="preserve">
+    <value>CSV</value>
+  </data>
+</root>

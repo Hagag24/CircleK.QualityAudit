@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SetupStudio" xml:space="preserve"><value>ستوديو الإعدادات</value></data>
+  <data name="SetupSubtitle" xml:space="preserve"><value>إدارة البراندات والفروع والقوالب في مكان واحد.</value></data>
+  <data name="Reload" xml:space="preserve"><value>تحديث</value></data>
+  <data name="Reloaded" xml:space="preserve"><value>تم التحديث.</value></data>
+  <data name="Brands" xml:space="preserve"><value>البراندات</value></data>
+  <data name="Branches" xml:space="preserve"><value>الفروع</value></data>
+  <data name="Templates" xml:space="preserve"><value>القوالب</value></data>
+  <data name="BrandsList" xml:space="preserve"><value>قائمة البراندات</value></data>
+  <data name="NewBrand" xml:space="preserve"><value>براند جديد</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث</value></data>
+  <data name="Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="BrandEditor" xml:space="preserve"><value>محرر البراند</value></data>
+  <data name="SelectBrand" xml:space="preserve"><value>اختر براند</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="NameAr" xml:space="preserve"><value>الاسم بالعربية</value></data>
+  <data name="LogoUrl" xml:space="preserve"><value>رابط الشعار</value></data>
+  <data name="IsActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="Create" xml:space="preserve"><value>إنشاء</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Delete" xml:space="preserve"><value>حذف</value></data>
+  <data name="BranchesList" xml:space="preserve"><value>قائمة الفروع</value></data>
+  <data name="NewBranch" xml:space="preserve"><value>فرع جديد</value></data>
+  <data name="AllBrands" xml:space="preserve"><value>كل البراندات</value></data>
+  <data name="BranchEditor" xml:space="preserve"><value>محرر الفرع</value></data>
+  <data name="Brand" xml:space="preserve"><value>البراند</value></data>
+  <data name="Region" xml:space="preserve"><value>المنطقة</value></data>
+  <data name="ManagerName" xml:space="preserve"><value>مدير الفرع</value></data>
+  <data name="EmployeeCount" xml:space="preserve"><value>عدد الموظفين</value></data>
+  <data name="SelectBranch" xml:space="preserve"><value>اختر فرع</value></data>
+  <data name="TemplatesList" xml:space="preserve"><value>قائمة القوالب</value></data>
+  <data name="NewTemplate" xml:space="preserve"><value>قالب جديد</value></data>
+  <data name="Sections" xml:space="preserve"><value>الأقسام</value></data>
+  <data name="Items" xml:space="preserve"><value>البنود</value></data>
+  <data name="TemplateStudio" xml:space="preserve"><value>ستوديو القالب</value></data>
+  <data name="Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="SectionsBuilder" xml:space="preserve"><value>بناء الأقسام</value></data>
+  <data name="AddSection" xml:space="preserve"><value>إضافة قسم</value></data>
+  <data name="NoSections" xml:space="preserve"><value>لا توجد أقسام بعد</value></data>
+  <data name="TotalWop" xml:space="preserve"><value>إجمالي WOP</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Critical" xml:space="preserve"><value>حرج</value></data>
+  <data name="RequiresTiming" xml:space="preserve"><value>يتطلب قياسات وقت</value></data>
+  <data name="Wop" xml:space="preserve"><value>WOP</value></data>
+  <data name="NoItems" xml:space="preserve"><value>لا توجد بنود بعد</value></data>
+  <data name="ItemText" xml:space="preserve"><value>نص البند</value></data>
+  <data name="ItemTextAr" xml:space="preserve"><value>نص البند بالعربية</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="NewSection" xml:space="preserve"><value>قسم جديد</value></data>
+  <data name="EditSection" xml:space="preserve"><value>تعديل القسم</value></data>
+  <data name="Order" xml:space="preserve"><value>الترتيب</value></data>
+  <data name="ConfirmDelete" xml:space="preserve"><value>هل تريد الحذف؟</value></data>
+  <data name="SelectTemplate" xml:space="preserve"><value>اختر قالب</value></data>
+  <data name="DatabaseBackups" xml:space="preserve"><value>قاعدة البيانات</value></data>
+  <data name="BackupSchedule" xml:space="preserve"><value>جدولة النسخ الاحتياطي</value></data>
+  <data name="NoBackupPermission" xml:space="preserve"><value>لا تملك صلاحية عرض النسخ الاحتياطية.</value></data>
+  <data name="LoadingSchedule" xml:space="preserve"><value>جاري تحميل الجدولة...</value></data>
+  <data name="BackupEnabled" xml:space="preserve"><value>تفعيل النسخ الاحتياطي التلقائي</value></data>
+  <data name="ScheduleMode" xml:space="preserve"><value>نمط الجدولة</value></data>
+  <data name="ScheduleDaily" xml:space="preserve"><value>يومي</value></data>
+  <data name="ScheduleInterval" xml:space="preserve"><value>كل عدد ساعات</value></data>
+  <data name="ScheduleTime" xml:space="preserve"><value>وقت النسخ اليومي</value></data>
+  <data name="IntervalHours" xml:space="preserve"><value>الفاصل (بالساعات)</value></data>
+  <data name="LastRun" xml:space="preserve"><value>آخر تشغيل</value></data>
+  <data name="NextRun" xml:space="preserve"><value>التشغيل القادم</value></data>
+  <data name="SaveSchedule" xml:space="preserve"><value>حفظ الجدولة</value></data>
+  <data name="BackupHistory" xml:space="preserve"><value>سجل النسخ الاحتياطية</value></data>
+  <data name="CreateBackup" xml:space="preserve"><value>إنشاء نسخة احتياطية</value></data>
+  <data name="LoadingBackups" xml:space="preserve"><value>جاري تحميل النسخ...</value></data>
+  <data name="DatabaseName" xml:space="preserve"><value>قاعدة البيانات</value></data>
+  <data name="BackupPath" xml:space="preserve"><value>مسار النسخ</value></data>
+  <data name="NoBackups" xml:space="preserve"><value>لا توجد نسخ احتياطية.</value></data>
+  <data name="BackupDate" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="BackupFile" xml:space="preserve"><value>ملف النسخة</value></data>
+  <data name="BackupSize" xml:space="preserve"><value>الحجم</value></data>
+  <data name="BackupSource" xml:space="preserve"><value>المصدر</value></data>
+  <data name="BackupStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="BackupBy" xml:space="preserve"><value>تم بواسطة</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="RestoreBackup" xml:space="preserve"><value>استعادة</value></data>
+  <data name="BackupCreateFailed" xml:space="preserve"><value>فشل إنشاء النسخة الاحتياطية.</value></data>
+  <data name="BackupCreateSuccess" xml:space="preserve"><value>تم إنشاء النسخة الاحتياطية بنجاح.</value></data>
+  <data name="ConfirmRestore" xml:space="preserve"><value>هل تريد استعادة قاعدة البيانات من النسخة '{0}'؟ سيتم استبدال البيانات الحالية.</value></data>
+  <data name="BackupRestoreSuccess" xml:space="preserve"><value>تمت استعادة قاعدة البيانات بنجاح.</value></data>
+  <data name="BackupRestoreFailed" xml:space="preserve"><value>فشلت استعادة قاعدة البيانات.</value></data>
+  <data name="BackupScheduleFailed" xml:space="preserve"><value>فشل حفظ جدولة النسخ الاحتياطي.</value></data>
+  <data name="BackupScheduleSaved" xml:space="preserve"><value>تم حفظ جدولة النسخ الاحتياطي.</value></data>
+  <data name="BackupSourceScheduled" xml:space="preserve"><value>تلقائي</value></data>
+  <data name="BackupSourceManual" xml:space="preserve"><value>يدوي</value></data>
+  <data name="BackupStatusSuccess" xml:space="preserve"><value>ناجح</value></data>
+  <data name="BackupStatusFailed" xml:space="preserve"><value>فشل</value></data>
+</root>

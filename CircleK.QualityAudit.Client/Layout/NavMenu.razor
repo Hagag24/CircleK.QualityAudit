@@ -1,0 +1,62 @@
+@inject IStringLocalizer<NavMenu> L
+
+<div class="ck-sidebar-header">
+    <div class="ck-brand">
+        <img src="assets/circlek-logo.svg" width="40" height="40" alt="Circle K" />
+        <div>
+            <div class="fw-bold">Circle K</div>
+            <div class="small text-muted">Quality Audit</div>
+        </div>
+    </div>
+</div>
+
+<div class="ck-nav">
+    <nav class="nav flex-column">
+        <AuthorizeView>
+            <Authorized Context="navAuth">
+                <AuthorizeView Policy="@PermissionConstants.ReportView">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> @L["Dashboard"]
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
+                <AuthorizeView Policy="Audit.ViewAny">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="audits">
+                            <span class="bi bi-clipboard2-check" aria-hidden="true"></span> @L["Audits"]
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
+                <AuthorizeView Policy="@PermissionConstants.ReportView">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="reports">
+                            <span class="bi bi-graph-up" aria-hidden="true"></span> @L["Reports"]
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
+                <AuthorizeView Policy="Setup.Access">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="admin/setup">
+                            <span class="bi bi-gear" aria-hidden="true"></span> @L["Setup"]
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
+                <AuthorizeView Policy="@PermissionConstants.UserView">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="admin/users">
+                            <span class="bi bi-people" aria-hidden="true"></span> @L["Users"]
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="login">
+                        <span class="bi bi-box-arrow-in-right" aria-hidden="true"></span> @L["Login"]
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </nav>
+</div>

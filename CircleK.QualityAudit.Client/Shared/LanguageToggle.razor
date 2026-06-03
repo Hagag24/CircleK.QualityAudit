@@ -1,0 +1,20 @@
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="btn-group">
+    <button class="btn btn-outline-light btn-sm" @onclick="SetArabic">AR</button>
+    <button class="btn btn-outline-light btn-sm" @onclick="SetEnglish">EN</button>
+</div>
+
+@code {
+    private Task SetArabic() => SetCultureAsync("ar-EG");
+
+    private Task SetEnglish() => SetCultureAsync("en-US");
+
+    private async Task SetCultureAsync(string culture)
+    {
+        await JS.InvokeVoidAsync("blazorCulture.set", culture);
+        await JS.InvokeVoidAsync("blazorDir.set", culture.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "rtl" : "ltr");
+        Nav.NavigateTo(Nav.Uri, true);
+    }
+}

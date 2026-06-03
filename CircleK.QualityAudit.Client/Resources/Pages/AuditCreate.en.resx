@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Create Audit</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Choose branch, template, and date.</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Brand" xml:space="preserve">
+    <value>Brand</value>
+  </data>
+  <data name="Branch" xml:space="preserve">
+    <value>Branch</value>
+  </data>
+  <data name="Template" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="CurrentEmployees" xml:space="preserve">
+    <value>Current employees on duty</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="SelectBrand" xml:space="preserve">
+    <value>Select brand</value>
+  </data>
+  <data name="SelectBranch" xml:space="preserve">
+    <value>Select branch</value>
+  </data>
+  <data name="SelectTemplate" xml:space="preserve">
+    <value>Select template</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>Saving...</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>Summary</value>
+  </data>
+  <data name="SelectedTemplate" xml:space="preserve">
+    <value>Selected template</value>
+  </data>
+  <data name="BranchManager" xml:space="preserve">
+    <value>Branch manager</value>
+  </data>
+  <data name="BranchEmployees" xml:space="preserve">
+    <value>Branch employee count</value>
+  </data>
+  <data name="NotSelected" xml:space="preserve">
+    <value>Not selected</value>
+  </data>
+  <data name="Sections" xml:space="preserve">
+    <value>Sections</value>
+  </data>
+  <data name="Items" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="TotalWop" xml:space="preserve">
+    <value>Total WOP</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Make sure the branch and template are correct before creating.</value>
+  </data>
+  <data name="ValidationMissing" xml:space="preserve">
+    <value>Please select both branch and template.</value>
+  </data>
+  <data name="CreateFailed" xml:space="preserve">
+    <value>Failed to create audit. Please try again.</value>
+  </data>
+</root>

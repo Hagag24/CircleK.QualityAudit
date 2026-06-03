@@ -1,0 +1,255 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>إدارة المستخدمين</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>إدارة الحسابات والأدوار والصلاحيات.</value>
+  </data>
+  <data name="NewUser" xml:space="preserve">
+    <value>مستخدم جديد</value>
+  </data>
+  <data name="StudioTitle" xml:space="preserve">
+    <value>استوديو المستخدمين</value>
+  </data>
+  <data name="StudioSubtitle" xml:space="preserve">
+    <value>إنشاء الحسابات وتحديد الأدوار والصلاحيات.</value>
+  </data>
+  <data name="Reload" xml:space="preserve">
+    <value>تحديث</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>المستخدمون</value>
+  </data>
+  <data name="Count" xml:space="preserve">
+    <value>{0} مستخدم</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>ابحث بالاسم أو البريد أو الفرع</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>جاري التحميل...</value>
+  </data>
+  <data name="EmptyUsers" xml:space="preserve">
+    <value>لا يوجد مستخدمون.</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>نشط</value>
+  </data>
+  <data name="Inactive" xml:space="preserve">
+    <value>غير نشط</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>تفاصيل المستخدم</value>
+  </data>
+  <data name="DetailsSubtitle" xml:space="preserve">
+    <value>تعديل البيانات والدور والصلاحيات.</value>
+  </data>
+  <data name="EmptySelection" xml:space="preserve">
+    <value>اختر مستخدمًا من القائمة أو أنشئ مستخدمًا جديدًا.</value>
+  </data>
+  <data name="DisplayName" xml:space="preserve">
+    <value>الاسم</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>البريد الإلكتروني</value>
+  </data>
+  <data name="Role" xml:space="preserve">
+    <value>الدور</value>
+  </data>
+  <data name="RoleAdmin" xml:space="preserve">
+    <value>مدير النظام</value>
+  </data>
+  <data name="RoleQualityManager" xml:space="preserve">
+    <value>مدير الجودة</value>
+  </data>
+  <data name="RoleInspector" xml:space="preserve">
+    <value>مدقق</value>
+  </data>
+  <data name="RoleViewer" xml:space="preserve">
+    <value>مستعرض</value>
+  </data>
+  <data name="Branch" xml:space="preserve">
+    <value>الفرع</value>
+  </data>
+  <data name="NoBranch" xml:space="preserve">
+    <value>بدون فرع</value>
+  </data>
+  <data name="IsActive" xml:space="preserve">
+    <value>الحساب نشط</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>كلمة المرور</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>إعادة تعيين كلمة المرور</value>
+  </data>
+  <data name="ResetPasswordHint" xml:space="preserve">
+    <value>اتركها فارغة للإبقاء على الحالية</value>
+  </data>
+  <data name="Permissions" xml:space="preserve">
+    <value>الصلاحيات</value>
+  </data>
+  <data name="EmptyPermissions" xml:space="preserve">
+    <value>لا توجد صلاحيات متاحة.</value>
+  </data>
+  <data name="PermSelectedSummary" xml:space="preserve">
+    <value>{0}/{1} محدد</value>
+  </data>
+  <data name="PermGroupSelectedSummary" xml:space="preserve">
+    <value>{0} من {1}</value>
+  </data>
+  <data name="PermGroupBrands" xml:space="preserve">
+    <value>البراندات</value>
+  </data>
+  <data name="PermGroupBranches" xml:space="preserve">
+    <value>الفروع</value>
+  </data>
+  <data name="PermGroupTemplates" xml:space="preserve">
+    <value>القوالب والأقسام والبنود</value>
+  </data>
+  <data name="PermGroupAudits" xml:space="preserve">
+    <value>التدقيقات</value>
+  </data>
+  <data name="PermGroupReports" xml:space="preserve">
+    <value>التقارير</value>
+  </data>
+  <data name="PermGroupUsers" xml:space="preserve">
+    <value>المستخدمون</value>
+  </data>
+  <data name="PermGroupBackups" xml:space="preserve">
+    <value>نسخ قاعدة البيانات</value>
+  </data>
+  <data name="PermGroupOther" xml:space="preserve">
+    <value>أخرى</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>مسح</value>
+  </data>
+  <data name="LoadError" xml:space="preserve">
+    <value>تعذر تحميل بيانات المستخدم.</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>كلمة المرور مطلوبة للمستخدم الجديد.</value>
+  </data>
+  <data name="SaveError" xml:space="preserve">
+    <value>تعذر حفظ المستخدم.</value>
+  </data>
+  <data name="PermBrandView" xml:space="preserve">
+    <value>عرض البراندات</value>
+  </data>
+  <data name="PermBrandCreate" xml:space="preserve">
+    <value>إضافة براند</value>
+  </data>
+  <data name="PermBrandUpdate" xml:space="preserve">
+    <value>تعديل البراندات</value>
+  </data>
+  <data name="PermBrandDelete" xml:space="preserve">
+    <value>حذف البراندات</value>
+  </data>
+  <data name="PermBranchView" xml:space="preserve">
+    <value>عرض الفروع</value>
+  </data>
+  <data name="PermBranchCreate" xml:space="preserve">
+    <value>إضافة فرع</value>
+  </data>
+  <data name="PermBranchUpdate" xml:space="preserve">
+    <value>تعديل الفروع</value>
+  </data>
+  <data name="PermBranchDelete" xml:space="preserve">
+    <value>حذف الفروع</value>
+  </data>
+  <data name="PermTemplateView" xml:space="preserve">
+    <value>عرض القوالب</value>
+  </data>
+  <data name="PermTemplateCreate" xml:space="preserve">
+    <value>إضافة قالب</value>
+  </data>
+  <data name="PermTemplateUpdate" xml:space="preserve">
+    <value>تعديل القوالب</value>
+  </data>
+  <data name="PermTemplateDelete" xml:space="preserve">
+    <value>حذف القوالب</value>
+  </data>
+  <data name="PermSectionCreate" xml:space="preserve">
+    <value>إضافة قسم</value>
+  </data>
+  <data name="PermSectionUpdate" xml:space="preserve">
+    <value>تعديل الأقسام</value>
+  </data>
+  <data name="PermSectionDelete" xml:space="preserve">
+    <value>حذف الأقسام</value>
+  </data>
+  <data name="PermItemCreate" xml:space="preserve">
+    <value>إضافة بند</value>
+  </data>
+  <data name="PermItemUpdate" xml:space="preserve">
+    <value>تعديل البنود</value>
+  </data>
+  <data name="PermItemDelete" xml:space="preserve">
+    <value>حذف البنود</value>
+  </data>
+  <data name="PermAuditView" xml:space="preserve">
+    <value>عرض التدقيقات</value>
+  </data>
+  <data name="PermAuditViewAll" xml:space="preserve">
+    <value>عرض كل التدقيقات</value>
+  </data>
+  <data name="PermAuditCreate" xml:space="preserve">
+    <value>إنشاء تدقيق</value>
+  </data>
+  <data name="PermAuditEdit" xml:space="preserve">
+    <value>تعديل التدقيق</value>
+  </data>
+  <data name="PermAuditSubmit" xml:space="preserve">
+    <value>اعتماد التدقيق</value>
+  </data>
+  <data name="PermReportView" xml:space="preserve">
+    <value>عرض التقارير</value>
+  </data>
+  <data name="PermReportExport" xml:space="preserve">
+    <value>تصدير التقارير</value>
+  </data>
+  <data name="PermUserView" xml:space="preserve">
+    <value>عرض المستخدمين</value>
+  </data>
+  <data name="PermUserCreate" xml:space="preserve">
+    <value>إضافة مستخدم</value>
+  </data>
+  <data name="PermUserUpdate" xml:space="preserve">
+    <value>تعديل المستخدمين</value>
+  </data>
+  <data name="PermUserResetPassword" xml:space="preserve">
+    <value>إعادة تعيين كلمة المرور</value>
+  </data>
+  <data name="PermUserPermissions" xml:space="preserve">
+    <value>إدارة صلاحيات المستخدمين</value>
+  </data>
+  <data name="PermDatabaseBackupView" xml:space="preserve">
+    <value>عرض نسخ قاعدة البيانات</value>
+  </data>
+  <data name="PermDatabaseBackupCreate" xml:space="preserve">
+    <value>إنشاء نسخة احتياطية</value>
+  </data>
+  <data name="PermDatabaseBackupRestore" xml:space="preserve">
+    <value>استعادة قاعدة البيانات من نسخة</value>
+  </data>
+  <data name="PermDatabaseBackupSchedule" xml:space="preserve">
+    <value>إدارة جدولة النسخ الاحتياطي</value>
+  </data>
+</root>

@@ -1,0 +1,34 @@
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthProvider
+@using System.Security.Claims
+
+<AuthorizeView>
+    <Authorized Context="authState">
+        <div class="d-flex align-items-center gap-2">
+            <span class="ck-user">@GetDisplayName(authState.User)</span>
+            <button class="btn btn-outline-light btn-sm" @onclick="Logout">Logout</button>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private string GetDisplayName(ClaimsPrincipal user)
+    {
+        return user.Identity?.Name ?? "User";
+    }
+
+    private async Task Logout()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout");
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        await Http.SendAsync(request);
+
+        if (AuthProvider is CookieAuthStateProvider cookieProvider)
+        {
+            cookieProvider.NotifyUserLogout();
+        }
+
+        Nav.NavigateTo("/login", true);
+    }
+}

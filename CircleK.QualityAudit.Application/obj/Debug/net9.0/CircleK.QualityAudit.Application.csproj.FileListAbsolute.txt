@@ -1,0 +1,30 @@
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\bin\Debug\net9.0\CircleK.QualityAudit.Application.deps.json
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\bin\Debug\net9.0\CircleK.QualityAudit.Application.dll
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\bin\Debug\net9.0\CircleK.QualityAudit.Application.pdb
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\bin\Debug\net9.0\CircleK.QualityAudit.Domain.dll
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\bin\Debug\net9.0\CircleK.QualityAudit.Domain.pdb
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.csproj.AssemblyReference.cache
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.AssemblyInfoInputs.cache
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.AssemblyInfo.cs
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.csproj.CoreCompileInputs.cache
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK..6167830F.Up2Date
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.dll
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\refint\CircleK.QualityAudit.Application.dll
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.pdb
+C:\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\ref\CircleK.QualityAudit.Application.dll
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\bin\Debug\net9.0\CircleK.QualityAudit.Application.deps.json
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\bin\Debug\net9.0\CircleK.QualityAudit.Application.dll
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\bin\Debug\net9.0\CircleK.QualityAudit.Application.pdb
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\bin\Debug\net9.0\CircleK.QualityAudit.Domain.dll
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\bin\Debug\net9.0\CircleK.QualityAudit.Domain.pdb
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.csproj.AssemblyReference.cache
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.AssemblyInfoInputs.cache
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.AssemblyInfo.cs
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.csproj.CoreCompileInputs.cache
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK..6167830F.Up2Date
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.dll
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\refint\CircleK.QualityAudit.Application.dll
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\CircleK.QualityAudit.Application.pdb
+C:\Hagag 2026\TMT\Circle K — Quality Audit System\CircleK.QualityAudit.Application\obj\Debug\net9.0\ref\CircleK.QualityAudit.Application.dll

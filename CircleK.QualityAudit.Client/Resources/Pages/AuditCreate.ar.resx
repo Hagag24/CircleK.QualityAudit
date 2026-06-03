@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>إنشاء أوديت</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>اختر الفرع والقالب والتاريخ.</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>رجوع</value>
+  </data>
+  <data name="Brand" xml:space="preserve">
+    <value>البراند</value>
+  </data>
+  <data name="Branch" xml:space="preserve">
+    <value>الفرع</value>
+  </data>
+  <data name="Template" xml:space="preserve">
+    <value>القالب</value>
+  </data>
+  <data name="CurrentEmployees" xml:space="preserve">
+    <value>عدد الموظفين أثناء الزيارة</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>التاريخ</value>
+  </data>
+  <data name="SelectBrand" xml:space="preserve">
+    <value>اختر البراند</value>
+  </data>
+  <data name="SelectBranch" xml:space="preserve">
+    <value>اختر الفرع</value>
+  </data>
+  <data name="SelectTemplate" xml:space="preserve">
+    <value>اختر القالب</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>جاري الحفظ...</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>إنشاء</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>الملخص</value>
+  </data>
+  <data name="SelectedTemplate" xml:space="preserve">
+    <value>القالب المختار</value>
+  </data>
+  <data name="BranchManager" xml:space="preserve">
+    <value>مدير الفرع</value>
+  </data>
+  <data name="BranchEmployees" xml:space="preserve">
+    <value>عدد الموظفين في الفرع</value>
+  </data>
+  <data name="NotSelected" xml:space="preserve">
+    <value>غير محدد</value>
+  </data>
+  <data name="Sections" xml:space="preserve">
+    <value>الأقسام</value>
+  </data>
+  <data name="Items" xml:space="preserve">
+    <value>البنود</value>
+  </data>
+  <data name="TotalWop" xml:space="preserve">
+    <value>إجمالي WOP</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>تأكد من صحة الفرع والقالب قبل الإنشاء.</value>
+  </data>
+  <data name="ValidationMissing" xml:space="preserve">
+    <value>يرجى اختيار الفرع والقالب.</value>
+  </data>
+  <data name="CreateFailed" xml:space="preserve">
+    <value>تعذر إنشاء الأوديت. حاول مرة أخرى.</value>
+  </data>
+</root>

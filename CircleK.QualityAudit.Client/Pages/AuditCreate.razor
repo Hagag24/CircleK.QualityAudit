@@ -1,0 +1,220 @@
+@page "/audits/new"
+@attribute [Authorize(Policy = PermissionConstants.AuditCreate)]
+@inject IStringLocalizer<AuditCreate> L
+@inject SetupApi SetupApi
+@inject AuditApi AuditApi
+@inject NavigationManager Nav
+
+<PageTitle>@L["Title"]</PageTitle>
+
+<div class="ck-page-header">
+    <div>
+        <h1 class="h4 mb-1">@L["Title"]</h1>
+        <div class="text-muted">@L["Subtitle"]</div>
+    </div>
+    <button class="btn btn-outline-secondary" @onclick='() => Nav.NavigateTo("audits")'>@L["Back"]</button>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <Alert Color="AlertColor.Danger" class="mb-3">@ErrorMessage</Alert>
+}
+
+<div class="row g-4">
+    <div class="col-12 col-xl-7">
+        <div class="card ck-card">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">@L["Brand"]</label>
+                        <select class="form-select" @onchange="OnBrandChanged">
+                            <option value="" selected="@(SelectedBrandId is null)">@L["SelectBrand"]</option>
+                            @foreach (var brand in Brands)
+                            {
+                                <option value="@brand.Id" selected="@(brand.Id == SelectedBrandId)">@GetBrandLabel(brand)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">@L["Branch"]</label>
+                        <select class="form-select" @onchange="OnBranchChanged">
+                            <option value="" selected="@(SelectedBranchId is null)">@L["SelectBranch"]</option>
+                            @foreach (var branch in Branches)
+                            {
+                                <option value="@branch.Id" selected="@(branch.Id == SelectedBranchId)">@GetBranchLabel(branch)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">@L["BranchManager"]</label>
+                        <input class="form-control" value="@(SelectedBranch?.ManagerName ?? string.Empty)" readonly />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">@L["BranchEmployees"]</label>
+                        <input class="form-control" value="@(SelectedBranch?.EmployeeCount?.ToString() ?? string.Empty)" readonly />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">@L["Template"]</label>
+                        <select class="form-select" @onchange="OnTemplateChanged">
+                            <option value="" selected="@(SelectedTemplateId is null)">@L["SelectTemplate"]</option>
+                            @foreach (var template in Templates)
+                            {
+                                <option value="@template.Id" selected="@(template.Id == SelectedTemplateId)">@template.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">@L["CurrentEmployees"]</label>
+                        <input type="number" class="form-control" @bind="CurrentEmployeeCount" min="0" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">@L["Date"]</label>
+                        <InputDate class="form-control" @bind-Value="AuditDate" />
+                    </div>
+                </div>
+
+                <div class="ck-form-actions mt-4">
+                    <button class="btn btn-primary" @onclick="CreateAudit" disabled="@IsSubmitting">
+                        @if (IsSubmitting)
+                        {
+                            <span>@L["Saving"]</span>
+                        }
+                        else
+                        {
+                            <span>@L["Create"]</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-5">
+        <div class="card ck-card">
+            <div class="card-body">
+                <h2 class="h6 mb-3">@L["Summary"]</h2>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">@L["SelectedTemplate"]</span>
+                    <strong>@(SelectedTemplate?.Name ?? L["NotSelected"])</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">@L["BranchManager"]</span>
+                    <strong>@(SelectedBranch?.ManagerName ?? L["NotSelected"])</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">@L["BranchEmployees"]</span>
+                    <strong>@(SelectedBranch?.EmployeeCount?.ToString() ?? L["NotSelected"])</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">@L["Sections"]</span>
+                    <strong>@(SelectedTemplate?.SectionCount ?? 0)</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">@L["Items"]</span>
+                    <strong>@(SelectedTemplate?.ItemCount ?? 0)</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">@L["TotalWop"]</span>
+                    <strong>@(SelectedTemplate?.TotalWop ?? 0)</strong>
+                </div>
+                <div class="ck-divider"></div>
+                <p class="text-muted mb-0">@L["Hint"]</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly List<BrandDto> Brands = new();
+    private readonly List<BranchDto> Branches = new();
+    private readonly List<TemplateListDto> Templates = new();
+
+    private Guid? SelectedBrandId;
+    private Guid? SelectedBranchId;
+    private Guid? SelectedTemplateId;
+    private DateTime AuditDate = DateTime.Today;
+    private int? CurrentEmployeeCount;
+
+    private bool IsSubmitting;
+    private string? ErrorMessage;
+
+    private TemplateListDto? SelectedTemplate => Templates.FirstOrDefault(t => t.Id == SelectedTemplateId);
+    private BranchDto? SelectedBranch => Branches.FirstOrDefault(b => b.Id == SelectedBranchId);
+    private bool IsArabic => System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBrandsAsync();
+        await LoadBranchesAsync();
+        await LoadTemplatesAsync();
+    }
+
+    private async Task LoadBrandsAsync()
+    {
+        Brands.Clear();
+        Brands.AddRange(await SetupApi.GetBrandsAsync());
+    }
+
+    private async Task LoadBranchesAsync()
+    {
+        Branches.Clear();
+        Branches.AddRange(await SetupApi.GetBranchesAsync(SelectedBrandId));
+    }
+
+    private async Task LoadTemplatesAsync()
+    {
+        Templates.Clear();
+        Templates.AddRange(await SetupApi.GetTemplatesAsync(SelectedBrandId));
+    }
+
+    private async Task OnBrandChanged(ChangeEventArgs args)
+    {
+        SelectedBrandId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        SelectedBranchId = null;
+        SelectedTemplateId = null;
+        CurrentEmployeeCount = null;
+        await LoadBranchesAsync();
+        await LoadTemplatesAsync();
+    }
+
+    private Task OnBranchChanged(ChangeEventArgs args)
+    {
+        SelectedBranchId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        CurrentEmployeeCount = SelectedBranch?.EmployeeCount;
+        return Task.CompletedTask;
+    }
+
+    private Task OnTemplateChanged(ChangeEventArgs args)
+    {
+        SelectedTemplateId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        return Task.CompletedTask;
+    }
+
+    private async Task CreateAudit()
+    {
+        ErrorMessage = null;
+
+        if (!SelectedBranchId.HasValue || !SelectedTemplateId.HasValue)
+        {
+            ErrorMessage = L["ValidationMissing"].Value;
+            return;
+        }
+
+        IsSubmitting = true;
+        var result = await AuditApi.CreateAuditAsync(new CreateAuditRequest(SelectedBranchId.Value, SelectedTemplateId.Value, AuditDate, CurrentEmployeeCount));
+        IsSubmitting = false;
+
+        if (result is null)
+        {
+            ErrorMessage = L["CreateFailed"].Value;
+            return;
+        }
+
+        Nav.NavigateTo($"audits/{result.Id}");
+    }
+
+    private string GetBranchLabel(BranchDto branch)
+        => IsArabic && !string.IsNullOrWhiteSpace(branch.NameAr) ? branch.NameAr! : branch.Name;
+
+    private string GetBrandLabel(BrandDto brand)
+        => IsArabic && !string.IsNullOrWhiteSpace(brand.NameAr) ? brand.NameAr! : brand.Name;
+}

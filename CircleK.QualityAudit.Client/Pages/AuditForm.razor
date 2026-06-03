@@ -1,0 +1,618 @@
+@page "/audits/{SessionId:guid}"
+@attribute [Authorize(Policy = "Audit.ViewAny")]
+@using System.Diagnostics
+@using System.Threading
+@implements IDisposable
+@inject IStringLocalizer<AuditForm> L
+@inject AuditApi AuditApi
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<PageTitle>@L["Title"]</PageTitle>
+
+<div class="ck-page-header">
+    <div>
+        <h1 class="h4 mb-1">@L["Title"]</h1>
+        <div class="text-muted">@L["Subtitle"]</div>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Nav.NavigateTo("audits")'>@L["Back"]</button>
+        <button type="button" class="btn btn-outline-dark" @onclick="OpenPrintReport">@L["PrintReport"]</button>
+        <AuthorizeView Policy="@PermissionConstants.ReportExport">
+            <button type="button" class="btn btn-outline-primary" @onclick="ExportExcel">@L["ExportExcel"]</button>
+            <button type="button" class="btn btn-outline-primary" @onclick="ExportCsv">@L["ExportCsv"]</button>
+        </AuthorizeView>
+        @if (Session is not null)
+        {
+            <span class="badge bg-secondary align-self-center">@GetStatusText(Session.Status)</span>
+        }
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <Alert Color="AlertColor.Danger" class="mb-3">@ErrorMessage</Alert>
+}
+
+@if (!string.IsNullOrWhiteSpace(SuccessMessage))
+{
+    <Alert Color="AlertColor.Success" class="mb-3">@SuccessMessage</Alert>
+}
+
+@if (IsLoading)
+{
+    <div class="text-center py-4 text-muted">@L["Loading"]</div>
+}
+else if (Form is null || Session is null)
+{
+    <div class="ck-empty">@L["NotFound"]</div>
+}
+else
+{
+    var totals = ComputeTotals();
+    var percent = totals.Max > 0 ? Math.Round(totals.Score / (double)totals.Max * 100) : 0;
+    var risk = ComputeRisk(totals.Score, totals.Max, totals.CriticalFailed);
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-4">
+            <div class="card ck-card mb-3">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">@L["AuditInfo"]</h2>
+                    <div class="ck-info-row">
+                        <span class="text-muted">@L["Branch"]</span>
+                        <strong>@GetBranchName(Session)</strong>
+                    </div>
+                    <div class="ck-info-row">
+                        <span class="text-muted">@L["Template"]</span>
+                        <strong>@Session.TemplateName</strong>
+                    </div>
+                    <div class="ck-info-row">
+                        <span class="text-muted">@L["Inspector"]</span>
+                        <strong>@Session.InspectorName</strong>
+                    </div>
+                    <div class="ck-info-row">
+                        <span class="text-muted">@L["Date"]</span>
+                        <strong>@Session.Date.ToString("yyyy-MM-dd")</strong>
+                    </div>
+                    @if (Session.CurrentEmployeeCount.HasValue)
+                    {
+                        <div class="ck-info-row">
+                            <span class="text-muted">@L["CurrentEmployees"]</span>
+                            <strong>@Session.CurrentEmployeeCount</strong>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card ck-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h2 class="h6 mb-0">@L["ScoreSummary"]</h2>
+                        <span class="@GetRiskBadgeClass(risk)">@GetRiskText(risk)</span>
+                    </div>
+                    <div class="ck-score-value">@totals.Score / @totals.Max</div>
+                    <div class="text-muted mb-2">@percent%</div>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar @GetRiskBarClass(risk)" style="width: @percent%"></div>
+                    </div>
+                    <div class="ck-info-row">
+                        <span class="text-muted">@L["CriticalFailed"]</span>
+                        <strong>@totals.CriticalFailed</strong>
+                    </div>
+                    @if (CanSubmit)
+                    {
+                        <button type="button" class="btn btn-primary w-100 mt-3" @onclick="SubmitAudit" disabled="@(IsSubmitted || IsSubmitting)">
+                            @if (IsSubmitting)
+                            {
+                                <span>@L["Submitting"]</span>
+                            }
+                            else
+                            {
+                                <span>@L["Submit"]</span>
+                            }
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-8">
+            <div class="ck-section-list">
+                @foreach (var section in Form.Sections)
+                {
+                    var sectionTotals = GetSectionTotals(section);
+                    <div class="card ck-card ck-audit-section">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h2 class="h6 mb-1">@GetSectionName(section)</h2>
+                                    <div class="text-muted small">@string.Format(L["ItemsCount"], section.Items.Count)</div>
+                                </div>
+                                <div class="ck-score-pill">@sectionTotals.Score / @sectionTotals.Max</div>
+                            </div>
+                            <div class="ck-audit-items">
+                                @foreach (var item in section.Items)
+                                {
+                                    <div class="ck-audit-item">
+                                        <div class="ck-audit-item-head">
+                                            <div class="ck-audit-item-title">
+                                                <div class="fw-semibold">@GetItemText(item)</div>
+                                                <div class="ck-audit-meta">
+                                                    <span>@L["Wop"]: @item.Wop</span>
+                                                    @if (item.IsCritical)
+                                                    {
+                                                        <span class="badge text-bg-danger">@L["Critical"]</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="@GetAnswerButtonClass(item.Id, AnswerType.Yes)" @onclick="() => SetAnswer(item, AnswerType.Yes)" disabled="@IsReadOnly">@L["Yes"]</button>
+                                                <button type="button" class="@GetAnswerButtonClass(item.Id, AnswerType.No)" @onclick="() => SetAnswer(item, AnswerType.No)" disabled="@IsReadOnly">@L["No"]</button>
+                                                <button type="button" class="@GetAnswerButtonClass(item.Id, AnswerType.NA)" @onclick="() => SetAnswer(item, AnswerType.NA)" disabled="@IsReadOnly">@L["NA"]</button>
+                                            </div>
+                                        </div>
+                                        <div class="ck-audit-item-notes">
+                                            <textarea class="form-control" rows="2" placeholder="@L["Notes"]" value="@GetNote(item.Id)" @onchange="e => SetNote(item.Id, e.Value?.ToString())" disabled="@IsReadOnly"></textarea>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => SaveNotes(item)" disabled="@IsReadOnly">@L["SaveNotes"]</button>
+                                            <span class="text-muted small">@GetAnswerScoreText(item.Id)</span>
+                                        </div>
+                                        @if (item.RequiresTiming)
+                                        {
+                                            <div class="ck-timing">
+                                                <div class="ck-timing-head">
+                                                    <span class="ck-timing-title">@L["Timing"]</span>
+                                                    <div class="ck-timing-actions">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" @onclick="() => StartTimer(item.Id)" disabled="@(IsReadOnly || IsTimingRunning(item.Id))">@L["TimingStart"]</button>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => StopTimer(item.Id)" disabled="@(IsReadOnly || !IsTimingRunning(item.Id))">@L["TimingStop"]</button>
+                                                        @if (IsTimingRunning(item.Id))
+                                                        {
+                                                            <span class="ck-timing-running">@string.Format(L["TimingRunning"], GetRunningText(item.Id))</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div class="ck-timing-meta text-muted small">
+                                                    <span>@string.Format(L["TimingCount"], GetTimingCount(item.Id))</span>
+                                                    <span>@string.Format(L["TimingAverage"], GetTimingAverageText(item.Id))</span>
+                                                </div>
+                                                <div class="ck-timing-list">
+                                                    @foreach (var entry in GetTimingEntries(item.Id))
+                                                    {
+                                                        <span class="badge rounded-pill text-bg-light">#@GetTimingIndex(item.Id, entry.Id) @FormatDuration(entry.DurationSeconds)</span>
+                                                    }
+                                                    @if (GetTimingEntries(item.Id).Count == 0)
+                                                    {
+                                                        <span class="text-muted small">@L["TimingEmpty"]</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid SessionId { get; set; }
+
+    private AuditFormDto? Form;
+    private AuditSessionDto? Session;
+    private readonly Dictionary<Guid, AuditAnswerDto> Answers = new();
+    private readonly Dictionary<Guid, string> Notes = new();
+    private readonly Dictionary<Guid, AuditItemTimingDto> Timings = new();
+    private readonly Dictionary<Guid, Stopwatch> RunningTimers = new();
+    private Timer? TickTimer;
+
+    private bool IsLoading = true;
+    private bool IsSubmitting;
+    private string? ErrorMessage;
+    private string? SuccessMessage;
+
+    private bool CanSubmit;
+    private bool IsSubmitted => Session?.Status == AuditStatus.Submitted;
+    private bool IsReadOnly => IsSubmitted;
+    private bool IsArabic => System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        CanSubmit = true;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+        SuccessMessage = null;
+        Answers.Clear();
+        Notes.Clear();
+        Timings.Clear();
+        RunningTimers.Clear();
+        TickTimer?.Dispose();
+        TickTimer = null;
+
+        Form = await AuditApi.GetAuditFormAsync(SessionId);
+        var detail = await AuditApi.GetAuditDetailAsync(SessionId);
+        Session = detail?.Session;
+
+        if (detail?.Answers is not null)
+        {
+            foreach (var answer in detail.Answers)
+            {
+                Answers[answer.ItemId] = answer;
+                Notes[answer.ItemId] = answer.Notes ?? string.Empty;
+            }
+        }
+
+        if (detail?.Timings is not null)
+        {
+            foreach (var timing in detail.Timings)
+            {
+                Timings[timing.ItemId] = timing;
+            }
+        }
+
+        IsLoading = false;
+    }
+
+    private async Task SetAnswer(AuditItemDto item, AnswerType answer)
+    {
+        if (IsReadOnly)
+        {
+            return;
+        }
+
+        ErrorMessage = null;
+        SuccessMessage = null;
+
+        var note = Notes.TryGetValue(item.Id, out var existingNote) ? existingNote : null;
+        var result = await AuditApi.SaveAnswerAsync(SessionId, new SaveAnswerRequest(item.Id, answer, note));
+        if (result is null)
+        {
+            ErrorMessage = L["SaveFailed"].Value;
+            return;
+        }
+
+        Answers[item.Id] = result;
+        Notes[item.Id] = result.Notes ?? string.Empty;
+    }
+
+    private async Task SaveNotes(AuditItemDto item)
+    {
+        if (IsReadOnly)
+        {
+            return;
+        }
+
+        if (!Answers.TryGetValue(item.Id, out var existing))
+        {
+            ErrorMessage = L["SelectAnswerFirst"].Value;
+            return;
+        }
+
+        ErrorMessage = null;
+        SuccessMessage = null;
+
+        var note = Notes.TryGetValue(item.Id, out var stored) ? stored : null;
+        var result = await AuditApi.SaveAnswerAsync(SessionId, new SaveAnswerRequest(item.Id, existing.Answer, note));
+        if (result is null)
+        {
+            ErrorMessage = L["SaveFailed"].Value;
+            return;
+        }
+
+        Answers[item.Id] = result;
+        Notes[item.Id] = result.Notes ?? string.Empty;
+        SuccessMessage = L["NotesSaved"].Value;
+    }
+
+    private async Task SubmitAudit()
+    {
+        if (IsSubmitted)
+        {
+            return;
+        }
+
+        ErrorMessage = null;
+        SuccessMessage = null;
+        IsSubmitting = true;
+
+        var result = await AuditApi.SubmitAuditAsync(SessionId);
+        IsSubmitting = false;
+
+        if (result.Session is not null)
+        {
+            Session = result.Session;
+            SuccessMessage = L["SubmitSuccess"].Value;
+            return;
+        }
+
+        if (result.MissingItemIds.Count > 0)
+        {
+            ErrorMessage = string.Format(L["MissingAnswers"], result.MissingItemIds.Count);
+            return;
+        }
+
+        ErrorMessage = result.Error ?? L["SubmitFailed"].Value;
+    }
+
+    private string GetBranchName(AuditSessionDto session)
+        => IsArabic && !string.IsNullOrWhiteSpace(session.BranchNameAr) ? session.BranchNameAr! : session.BranchName;
+
+    private string GetSectionName(AuditSectionDto section)
+        => IsArabic && !string.IsNullOrWhiteSpace(section.NameAr) ? section.NameAr! : section.Name;
+
+    private string GetItemText(AuditItemDto item)
+        => IsArabic && !string.IsNullOrWhiteSpace(item.TextAr) ? item.TextAr! : item.Text;
+
+    private string GetNote(Guid itemId)
+        => Notes.TryGetValue(itemId, out var note) ? note : string.Empty;
+
+    private void SetNote(Guid itemId, string? value)
+        => Notes[itemId] = value ?? string.Empty;
+
+    private string GetAnswerButtonClass(Guid itemId, AnswerType answer)
+    {
+        var selected = Answers.TryGetValue(itemId, out var existing) && existing.Answer == answer;
+        var color = answer switch
+        {
+            AnswerType.Yes => "success",
+            AnswerType.No => "danger",
+            _ => "secondary"
+        };
+
+        return selected ? $"btn btn-sm btn-{color}" : $"btn btn-sm btn-outline-{color}";
+    }
+
+    private string GetAnswerScoreText(Guid itemId)
+    {
+        if (!Answers.TryGetValue(itemId, out var answer))
+        {
+            return string.Empty;
+        }
+
+        return string.Format(L["Score"], answer.Score);
+    }
+
+    private (int Score, int Max, int CriticalFailed) ComputeTotals()
+    {
+        if (Form is null)
+        {
+            return (0, 0, 0);
+        }
+
+        var score = 0;
+        var max = 0;
+        var criticalFailed = 0;
+
+        foreach (var section in Form.Sections)
+        {
+            foreach (var item in section.Items)
+            {
+                if (!Answers.TryGetValue(item.Id, out var answer))
+                {
+                    continue;
+                }
+
+                if (answer.Answer != AnswerType.NA)
+                {
+                    max += item.Wop;
+                    score += answer.Score;
+                }
+
+                if (item.IsCritical && answer.Answer == AnswerType.No)
+                {
+                    criticalFailed++;
+                }
+            }
+        }
+
+        return (score, max, criticalFailed);
+    }
+
+    private (int Score, int Max) GetSectionTotals(AuditSectionDto section)
+    {
+        var score = 0;
+        var max = 0;
+
+        foreach (var item in section.Items)
+        {
+            if (!Answers.TryGetValue(item.Id, out var answer))
+            {
+                continue;
+            }
+
+            if (answer.Answer != AnswerType.NA)
+            {
+                max += item.Wop;
+                score += answer.Score;
+            }
+        }
+
+        return (score, max);
+    }
+
+    private string GetStatusText(AuditStatus status)
+        => status == AuditStatus.Submitted ? L["StatusSubmitted"] : L["StatusDraft"];
+
+    private RiskLevel ComputeRisk(int score, int max, int criticalFailed)
+    {
+        if (criticalFailed > 0)
+        {
+            return RiskLevel.Danger;
+        }
+
+        if (max > 0 && score / (double)max >= 0.70)
+        {
+            return RiskLevel.Safe;
+        }
+
+        return RiskLevel.Warning;
+    }
+
+    private string GetRiskText(RiskLevel level)
+        => level switch
+        {
+            RiskLevel.Safe => L["RiskSafe"],
+            RiskLevel.Warning => L["RiskWarning"],
+            _ => L["RiskDanger"]
+        };
+
+    private string GetRiskBadgeClass(RiskLevel level)
+        => level switch
+        {
+            RiskLevel.Safe => "badge text-bg-success",
+            RiskLevel.Warning => "badge text-bg-warning",
+            _ => "badge text-bg-danger"
+        };
+
+    private string GetRiskBarClass(RiskLevel level)
+        => level switch
+        {
+            RiskLevel.Safe => "bg-success",
+            RiskLevel.Warning => "bg-warning",
+            _ => "bg-danger"
+        };
+
+    private void StartTimer(Guid itemId)
+    {
+        if (IsReadOnly || RunningTimers.ContainsKey(itemId))
+        {
+            return;
+        }
+
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+        RunningTimers[itemId] = stopwatch;
+        EnsureTicking();
+    }
+
+    private async Task StopTimer(Guid itemId)
+    {
+        if (!RunningTimers.TryGetValue(itemId, out var stopwatch))
+        {
+            return;
+        }
+
+        ErrorMessage = null;
+        stopwatch.Stop();
+        RunningTimers.Remove(itemId);
+        StopTickingIfIdle();
+
+        var seconds = (int)Math.Round(stopwatch.Elapsed.TotalSeconds);
+        if (seconds <= 0)
+        {
+            seconds = 1;
+        }
+
+        var result = await AuditApi.AddTimingAsync(SessionId, new SaveTimingRequest(itemId, seconds));
+        if (result is null)
+        {
+            ErrorMessage = L["TimingSaveFailed"].Value;
+            return;
+        }
+
+        Timings[itemId] = result;
+    }
+
+    private bool IsTimingRunning(Guid itemId) => RunningTimers.ContainsKey(itemId);
+
+    private string GetRunningText(Guid itemId)
+    {
+        if (!RunningTimers.TryGetValue(itemId, out var stopwatch))
+        {
+            return "00:00";
+        }
+
+        return FormatDuration(stopwatch.Elapsed.TotalSeconds);
+    }
+
+    private int GetTimingCount(Guid itemId)
+        => Timings.TryGetValue(itemId, out var timing) ? timing.Count : 0;
+
+    private string GetTimingAverageText(Guid itemId)
+    {
+        if (!Timings.TryGetValue(itemId, out var timing) || timing.Count == 0)
+        {
+            return "-";
+        }
+
+        return FormatDuration(timing.AverageSeconds);
+    }
+
+    private IReadOnlyList<AuditTimingEntryDto> GetTimingEntries(Guid itemId)
+        => Timings.TryGetValue(itemId, out var timing) ? timing.Entries : Array.Empty<AuditTimingEntryDto>();
+
+    private int GetTimingIndex(Guid itemId, Guid entryId)
+    {
+        var entries = GetTimingEntries(itemId);
+        for (var i = 0; i < entries.Count; i++)
+        {
+            if (entries[i].Id == entryId)
+            {
+                return i + 1;
+            }
+        }
+
+        return entries.Count;
+    }
+
+    private static string FormatDuration(double totalSeconds)
+    {
+        var seconds = (int)Math.Round(totalSeconds);
+        var time = TimeSpan.FromSeconds(seconds);
+        return time.TotalHours >= 1
+            ? time.ToString(@"h\:mm\:ss")
+            : time.ToString(@"m\:ss");
+    }
+
+    private void EnsureTicking()
+    {
+        if (TickTimer is not null)
+        {
+            return;
+        }
+
+        TickTimer = new Timer(_ => InvokeAsync(StateHasChanged), null, 0, 1000);
+    }
+
+    private void StopTickingIfIdle()
+    {
+        if (RunningTimers.Count > 0 || TickTimer is null)
+        {
+            return;
+        }
+
+        TickTimer.Dispose();
+        TickTimer = null;
+    }
+
+    private async Task OpenPrintReport()
+    {
+        var url = AuditApi.BuildAuditExportUrl(SessionId, "html", System.Globalization.CultureInfo.CurrentUICulture.Name, autoPrint: true);
+        await JS.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private async Task ExportExcel()
+    {
+        var url = AuditApi.BuildAuditExportUrl(SessionId, "excel", System.Globalization.CultureInfo.CurrentUICulture.Name);
+        await JS.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private async Task ExportCsv()
+    {
+        var url = AuditApi.BuildAuditExportUrl(SessionId, "csv", System.Globalization.CultureInfo.CurrentUICulture.Name);
+        await JS.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    public void Dispose()
+    {
+        TickTimer?.Dispose();
+        TickTimer = null;
+    }
+}

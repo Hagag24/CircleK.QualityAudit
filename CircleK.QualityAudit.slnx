@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="CircleK.QualityAudit.API/CircleK.QualityAudit.API.csproj" />
+  <Project Path="CircleK.QualityAudit.Application/CircleK.QualityAudit.Application.csproj" />
+  <Project Path="CircleK.QualityAudit.Client/CircleK.QualityAudit.Client.csproj" />
+  <Project Path="CircleK.QualityAudit.Domain/CircleK.QualityAudit.Domain.csproj" />
+  <Project Path="CircleK.QualityAudit.Infrastructure/CircleK.QualityAudit.Infrastructure.csproj" />
+</Solution>

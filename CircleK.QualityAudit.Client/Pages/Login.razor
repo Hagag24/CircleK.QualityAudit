@@ -1,0 +1,105 @@
+@page "/login"
+@layout PublicLayout
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthProvider
+@inject CircleK.QualityAudit.Client.Http.CsrfTokenService CsrfTokenService
+@inject IStringLocalizer<Login> L
+
+<PageTitle>@L["Title"]</PageTitle>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-end mb-3">
+        <LanguageToggle />
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-6 col-lg-5">
+            <div class="ck-card bg-white p-4">
+                <div class="ck-brand mb-4">
+                    <img src="assets/circlek-logo.svg" class="ck-logo" alt="Circle K" />
+                    <div>
+                        <div class="fw-bold">Circle K</div>
+                        <div class="text-muted small">Quality Audit System</div>
+                    </div>
+                </div>
+
+                <Card>
+                    <CardBody>
+                        <CardTitle>@L["Title"]</CardTitle>
+                        <CardText class="text-muted">@L["Subtitle"]</CardText>
+
+                        <div class="mb-3">
+                            <label class="form-label">@L["Email"]</label>
+                            <InputText class="form-control" @bind-Value="_model.Email" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">@L["Password"]</label>
+                            <InputText class="form-control" @bind-Value="_model.Password" type="password" />
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(_error))
+                        {
+                            <Alert Color="AlertColor.Danger">@_error</Alert>
+                        }
+
+                        <div class="d-grid mt-3">
+                            <Button Color="ButtonColor.Primary" Disabled="_busy" @onclick="HandleLogin">
+                                @L["SignIn"]
+                            </Button>
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly LoginModel _model = new();
+    private string? _error;
+    private bool _busy;
+
+    private async Task HandleLogin()
+    {
+        _error = null;
+        _busy = true;
+        try
+        {
+            await CsrfTokenService.EnsureTokenAsync();
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
+            {
+                Content = JsonContent.Create(new { email = _model.Email, password = _model.Password })
+            };
+            request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+
+            var response = await Http.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                _error = L["Invalid"];
+                return;
+            }
+
+            if (AuthProvider is CookieAuthStateProvider cookieProvider)
+            {
+                cookieProvider.NotifyUserAuthentication();
+            }
+
+            Nav.NavigateTo("/", true);
+        }
+        catch
+        {
+            _error = L["ServerError"];
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private sealed class LoginModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+}

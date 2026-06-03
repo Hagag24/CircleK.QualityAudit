@@ -1,0 +1,9 @@
+@inherits LayoutComponentBase
+
+<main class="ck-public" dir="@(IsRtl ? "rtl" : "ltr")">
+    @Body
+</main>
+
+@code {
+    private bool IsRtl => System.Globalization.CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
+}

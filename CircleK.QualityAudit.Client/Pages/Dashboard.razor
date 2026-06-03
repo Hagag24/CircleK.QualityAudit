@@ -1,0 +1,274 @@
+﻿@page "/"
+@attribute [Authorize(Policy = PermissionConstants.ReportView)]
+@inject IStringLocalizer<Dashboard> L
+@inject NavigationManager Nav
+@inject ReportApi ReportApi
+@inject SetupApi SetupApi
+
+<PageTitle>@L["Title"]</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="ck-page-header">
+        <div>
+            <h1 class="h4 mb-1">@L["Title"]</h1>
+            <div class="text-muted">@L["Subtitle"]</div>
+        </div>
+        <AuthorizeView Policy="@PermissionConstants.AuditCreate">
+            <button class="btn btn-danger" @onclick='() => Nav.NavigateTo("audits/new")'>@L["NewAudit"]</button>
+        </AuthorizeView>
+    </div>
+
+    <div class="card ck-card mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-4">
+                    <label class="form-label">@L["Brand"]</label>
+                    <select class="form-select" @onchange="OnBrandChanged">
+                        <option value="" selected="@(SelectedBrandId is null)">@L["AllBrands"]</option>
+                        @foreach (var brand in Brands)
+                        {
+                            <option value="@brand.Id" selected="@(brand.Id == SelectedBrandId)">@GetBrandLabel(brand)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">@L["Search"]</label>
+                    <input class="form-control" placeholder="@L["SearchPlaceholder"]" @bind="SearchText" />
+                </div>
+                <div class="col-12 col-md-2 d-flex gap-2">
+                    <button class="btn btn-outline-secondary flex-fill" @onclick="ResetFilters">@L["Reset"]</button>
+                    <button class="btn btn-primary flex-fill" @onclick="ApplyFilters">@L["Search"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="text-center py-4 text-muted">@L["Loading"]</div>
+    }
+    else if (DashboardData is null)
+    {
+        <div class="ck-empty">@L["Empty"]</div>
+    }
+    else
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card ck-kpi ck-kpi-danger">
+                    <div class="card-body">
+                        <div class="ck-kpi-title">@L["KpiDanger"]</div>
+                        <div class="ck-kpi-value">@DashboardData.Kpis.DangerBranches</div>
+                        <div class="ck-kpi-meta">@L["KpiBranches"]</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card ck-kpi ck-kpi-warning">
+                    <div class="card-body">
+                        <div class="ck-kpi-title">@L["KpiWarning"]</div>
+                        <div class="ck-kpi-value">@DashboardData.Kpis.WarningBranches</div>
+                        <div class="ck-kpi-meta">@L["KpiBranches"]</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card ck-kpi ck-kpi-safe">
+                    <div class="card-body">
+                        <div class="ck-kpi-title">@L["KpiSafe"]</div>
+                        <div class="ck-kpi-value">@DashboardData.Kpis.SafeBranches</div>
+                        <div class="ck-kpi-meta">@L["KpiBranches"]</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card ck-kpi ck-kpi-total">
+                    <div class="card-body">
+                        <div class="ck-kpi-title">@L["KpiAudits"]</div>
+                        <div class="ck-kpi-value">@DashboardData.Kpis.TotalAudits</div>
+                        <div class="ck-kpi-meta">@L["KpiAllTime"]</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12 col-xl-7">
+                <div class="card ck-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2 class="h6 mb-0">@L["BranchRiskTable"]</h2>
+                            <button class="btn btn-link p-0" @onclick='() => Nav.NavigateTo("reports")'>@L["SeeAll"]</button>
+                        </div>
+                        @if (DashboardData.Branches.Count == 0)
+                        {
+                            <div class="ck-empty-sm">@L["Empty"]</div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>@L["TableBranch"]</th>
+                                            <th>@L["TableLastAudit"]</th>
+                                            <th>@L["TableScore"]</th>
+                                            <th>@L["TableCritical"]</th>
+                                            <th>@L["TableRisk"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var row in DashboardData.Branches)
+                                        {
+                                            <tr>
+                                                <td>@GetBranchLabel(row)</td>
+                                                <td>@(row.LastAuditDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                                                <td>@FormatScore(row.TotalScore, row.TotalMax)</td>
+                                                <td>@row.CriticalFailedCount</td>
+                                                <td><span class="@GetRiskBadgeClass(row.RiskLevel)">@GetRiskText(row.RiskLevel)</span></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-5">
+                <div class="card ck-card mb-3">
+                    <div class="card-body">
+                        <h2 class="h6 mb-3">@L["SectionAverages"]</h2>
+                        @if (DashboardData.Sections.Count == 0)
+                        {
+                            <div class="ck-empty-sm">@L["Empty"]</div>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column gap-2">
+                                @foreach (var sectionRow in DashboardData.Sections)
+                                {
+                                    <div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-semibold">@GetSectionLabel(sectionRow)</span>
+                                            <span class="text-muted">@sectionRow.AveragePercent.ToString("0.0")%</span>
+                                        </div>
+                                        <div class="progress" role="progressbar" aria-valuenow="@sectionRow.AveragePercent" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="progress-bar bg-danger" style="width:@sectionRow.AveragePercent%"></div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="card ck-card">
+                    <div class="card-body">
+                        <h2 class="h6 mb-3">@L["CriticalItems"]</h2>
+                        @if (DashboardData.CriticalItems.Count == 0)
+                        {
+                            <div class="ck-empty-sm">@L["Empty"]</div>
+                        }
+                        else
+                        {
+                            <ul class="list-unstyled mb-0">
+                                @foreach (var item in DashboardData.CriticalItems)
+                                {
+                                    <li class="d-flex justify-content-between mb-2">
+                                        <span>@GetItemLabel(item)</span>
+                                        <span class="badge text-bg-danger">@item.FailedCount</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<BrandDto> Brands = new();
+    private DashboardReportDto? DashboardData;
+    private bool IsLoading;
+
+    private Guid? SelectedBrandId;
+    private string? SearchText;
+
+    private bool IsArabic => System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBrandsAsync();
+        await LoadDashboardAsync();
+    }
+
+    private async Task LoadBrandsAsync()
+    {
+        Brands.Clear();
+        Brands.AddRange(await SetupApi.GetBrandsAsync());
+    }
+
+    private async Task LoadDashboardAsync()
+    {
+        IsLoading = true;
+        DashboardData = await ReportApi.GetDashboardAsync(new ReportQuery(SelectedBrandId, null, null, SearchText));
+        IsLoading = false;
+    }
+
+    private async Task OnBrandChanged(ChangeEventArgs args)
+    {
+        SelectedBrandId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        await LoadDashboardAsync();
+    }
+
+    private async Task ApplyFilters()
+        => await LoadDashboardAsync();
+
+    private async Task ResetFilters()
+    {
+        SelectedBrandId = null;
+        SearchText = null;
+        await LoadDashboardAsync();
+    }
+
+    private string GetBrandLabel(BrandDto brand)
+        => IsArabic && !string.IsNullOrWhiteSpace(brand.NameAr) ? brand.NameAr! : brand.Name;
+
+    private string GetBranchLabel(BranchRiskRowDto row)
+        => IsArabic && !string.IsNullOrWhiteSpace(row.BranchNameAr) ? row.BranchNameAr! : row.BranchName;
+
+    private string GetSectionLabel(SectionAverageDto section)
+        => IsArabic && !string.IsNullOrWhiteSpace(section.SectionNameAr) ? section.SectionNameAr! : section.SectionName;
+
+    private string GetItemLabel(CriticalItemDto item)
+        => IsArabic && !string.IsNullOrWhiteSpace(item.ItemTextAr) ? item.ItemTextAr! : item.ItemText;
+
+    private string FormatScore(int totalScore, int totalMax)
+    {
+        if (totalMax <= 0)
+        {
+            return "-";
+        }
+
+        var percent = Math.Round(totalScore / (double)totalMax * 100);
+        return $"{percent}%";
+    }
+
+    private string GetRiskText(RiskLevel level)
+        => level switch
+        {
+            RiskLevel.Safe => L["RiskSafe"],
+            RiskLevel.Warning => L["RiskWarning"],
+            _ => L["RiskDanger"]
+        };
+
+    private string GetRiskBadgeClass(RiskLevel level)
+        => level switch
+        {
+            RiskLevel.Safe => "badge text-bg-success",
+            RiskLevel.Warning => "badge text-bg-warning",
+            _ => "badge text-bg-danger"
+        };
+}

@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Audit Form</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Complete the answers, then submit the audit.</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Audit not found.</value>
+  </data>
+  <data name="AuditInfo" xml:space="preserve">
+    <value>Audit Info</value>
+  </data>
+  <data name="Branch" xml:space="preserve">
+    <value>Branch</value>
+  </data>
+  <data name="Template" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="Inspector" xml:space="preserve">
+    <value>Inspector</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="CurrentEmployees" xml:space="preserve">
+    <value>Employees on duty</value>
+  </data>
+  <data name="ScoreSummary" xml:space="preserve">
+    <value>Score Summary</value>
+  </data>
+  <data name="CriticalFailed" xml:space="preserve">
+    <value>Critical failed</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Submit Audit</value>
+  </data>
+  <data name="Submitting" xml:space="preserve">
+    <value>Submitting...</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="NA" xml:space="preserve">
+    <value>N/A</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="SaveNotes" xml:space="preserve">
+    <value>Save notes</value>
+  </data>
+  <data name="Score" xml:space="preserve">
+    <value>Score: {0}</value>
+  </data>
+  <data name="ItemsCount" xml:space="preserve">
+    <value>Items: {0}</value>
+  </data>
+  <data name="Critical" xml:space="preserve">
+    <value>Critical</value>
+  </data>
+  <data name="StatusDraft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="StatusSubmitted" xml:space="preserve">
+    <value>Submitted</value>
+  </data>
+  <data name="RiskSafe" xml:space="preserve">
+    <value>Safe</value>
+  </data>
+  <data name="RiskWarning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="RiskDanger" xml:space="preserve">
+    <value>Danger</value>
+  </data>
+  <data name="SaveFailed" xml:space="preserve">
+    <value>Failed to save answer.</value>
+  </data>
+  <data name="SelectAnswerFirst" xml:space="preserve">
+    <value>Select an answer before saving notes.</value>
+  </data>
+  <data name="NotesSaved" xml:space="preserve">
+    <value>Notes saved.</value>
+  </data>
+  <data name="SubmitSuccess" xml:space="preserve">
+    <value>Audit submitted successfully.</value>
+  </data>
+  <data name="MissingAnswers" xml:space="preserve">
+    <value>{0} items are unanswered. Please complete them before submitting.</value>
+  </data>
+  <data name="SubmitFailed" xml:space="preserve">
+    <value>Failed to submit audit.</value>
+  </data>
+  <data name="Wop" xml:space="preserve">
+    <value>WOP</value>
+  </data>
+  <data name="Timing" xml:space="preserve">
+    <value>Timing</value>
+  </data>
+  <data name="TimingStart" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="TimingStop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="TimingRunning" xml:space="preserve">
+    <value>Running: {0}</value>
+  </data>
+  <data name="TimingCount" xml:space="preserve">
+    <value>Measurements: {0}</value>
+  </data>
+  <data name="TimingAverage" xml:space="preserve">
+    <value>Average: {0}</value>
+  </data>
+  <data name="TimingEmpty" xml:space="preserve">
+    <value>No timing measurements yet.</value>
+  </data>
+  <data name="TimingSaveFailed" xml:space="preserve">
+    <value>Failed to save timing.</value>
+  </data>
+  <data name="PrintReport" xml:space="preserve">
+    <value>Print / PDF</value>
+  </data>
+  <data name="ExportExcel" xml:space="preserve">
+    <value>Excel</value>
+  </data>
+  <data name="ExportCsv" xml:space="preserve">
+    <value>CSV</value>
+  </data>
+</root>

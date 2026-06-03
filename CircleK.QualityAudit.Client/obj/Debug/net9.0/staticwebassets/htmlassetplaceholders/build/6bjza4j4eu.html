@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CircleK.QualityAudit.Client</title>
+    <base href="/" />
+    <script>
+        (function () {
+            var culture = localStorage.getItem('blazorCulture') || 'ar-EG';
+            var dir = culture.toLowerCase().startsWith('ar') ? 'rtl' : 'ltr';
+            window.__ck_dir = dir;
+            document.documentElement.setAttribute('dir', dir);
+            document.documentElement.setAttribute('lang', dir === 'rtl' ? 'ar' : 'en');
+            if (document.body) {
+                document.body.setAttribute('dir', dir);
+            } else {
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.body.setAttribute('dir', dir);
+                });
+            }
+        })();
+    </script>
+    
+    <script>
+        function applyBootstrapDir(dir) {
+            var link = document.getElementById('bootstrap-css');
+            if (!link) return;
+            link.href = dir === 'rtl'
+                ? 'lib/bootstrap/dist/css/bootstrap.rtl.min.css'
+                : 'lib/bootstrap/dist/css/bootstrap.min.css';
+        }
+    </script>
+    <link id="bootstrap-css" rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <script>
+        applyBootstrapDir(window.__ck_dir || 'ltr');
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="_content/Blazor.Bootstrap/blazor.bootstrap.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="CircleK.QualityAudit.Client.styles.css" rel="stylesheet" />
+    <script type="importmap">{
+  "imports": {
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.js": "./_content/Blazor.Bootstrap/blazor.bootstrap.5c2gp224fj.js",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.pdf.js": "./_content/Blazor.Bootstrap/blazor.bootstrap.pdf.n1mvvrfiip.js",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.sortable-list.js": "./_content/Blazor.Bootstrap/blazor.bootstrap.sortable-list.ezlxc6gzv3.js",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.theme-switcher.js": "./_content/Blazor.Bootstrap/blazor.bootstrap.theme-switcher.pisakkcwob.js",
+    "./_content/Blazor.Bootstrap/pdfjs-4.0.379.min.js": "./_content/Blazor.Bootstrap/pdfjs-4.0.379.min.j8zp7bt7w3.js",
+    "./_content/Blazor.Bootstrap/pdfjs-4.0.379.worker.min.js": "./_content/Blazor.Bootstrap/pdfjs-4.0.379.worker.min.79hai7knhw.js",
+    "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.md9yvkcqlf.js",
+    "./_framework/dotnet.js": "./_framework/dotnet.2q2qdusddv.js",
+    "./_framework/dotnet.native.js": "./_framework/dotnet.native.l1ds2rhypd.js",
+    "./_framework/dotnet.runtime.js": "./_framework/dotnet.runtime.2hocyfcbj2.js",
+    "./lib/bootstrap/dist/js/bootstrap.js": "./lib/bootstrap/dist/js/bootstrap.3cu83mfmm9.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.js": "./lib/bootstrap/dist/js/bootstrap.bundle.min.493y06b0oq.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.js": "./lib/bootstrap/dist/js/bootstrap.bundle.u6mj9kewms.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.js": "./lib/bootstrap/dist/js/bootstrap.esm.min.jj8uyg4cgr.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.js": "./lib/bootstrap/dist/js/bootstrap.esm.zln0jygolg.js",
+    "./lib/bootstrap/dist/js/bootstrap.min.js": "./lib/bootstrap/dist/js/bootstrap.min.63fj8s7r0e.js"
+  },
+  "scopes": {},
+  "integrity": {
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.5c2gp224fj.js": "sha256-K2/8DlTnqlDEoF5c6HURzb3R0IK1KrywUAEbLLWNCno=",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.js": "sha256-K2/8DlTnqlDEoF5c6HURzb3R0IK1KrywUAEbLLWNCno=",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.pdf.js": "sha256-W7yoJQDLn/kp1Hj9hVIhrOf7Y5VHTzRZLnz9+3x6Ocs=",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.pdf.n1mvvrfiip.js": "sha256-W7yoJQDLn/kp1Hj9hVIhrOf7Y5VHTzRZLnz9+3x6Ocs=",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.sortable-list.ezlxc6gzv3.js": "sha256-du71NM6e2+m9l81ldV+Gbr74ER7Xx1GnJFg+rIY6OQU=",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.sortable-list.js": "sha256-du71NM6e2+m9l81ldV+Gbr74ER7Xx1GnJFg+rIY6OQU=",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.theme-switcher.js": "sha256-Hy2y6B5ohWPnmWg4c52+QUuZGTw8r09KtWKcaGiaa/k=",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.theme-switcher.pisakkcwob.js": "sha256-Hy2y6B5ohWPnmWg4c52+QUuZGTw8r09KtWKcaGiaa/k=",
+    "./_content/Blazor.Bootstrap/pdfjs-4.0.379.min.j8zp7bt7w3.js": "sha256-XX7we2CiSWzj3rsNtKFCod90LBYAJ3bo8rmu4EuN7SQ=",
+    "./_content/Blazor.Bootstrap/pdfjs-4.0.379.min.js": "sha256-XX7we2CiSWzj3rsNtKFCod90LBYAJ3bo8rmu4EuN7SQ=",
+    "./_content/Blazor.Bootstrap/pdfjs-4.0.379.worker.min.79hai7knhw.js": "sha256-JbwqIn9Fic7JuWyTXuNnAA1T0dYQ2tkTi9HhrSltUtQ=",
+    "./_content/Blazor.Bootstrap/pdfjs-4.0.379.worker.min.js": "sha256-JbwqIn9Fic7JuWyTXuNnAA1T0dYQ2tkTi9HhrSltUtQ=",
+    "./_framework/blazor.webassembly.js": "sha256-+vIfWRbrna1rF+s8xknbrluJxgPx4vfKB0WJ74HdICo=",
+    "./_framework/blazor.webassembly.md9yvkcqlf.js": "sha256-+vIfWRbrna1rF+s8xknbrluJxgPx4vfKB0WJ74HdICo=",
+    "./_framework/dotnet.2q2qdusddv.js": "sha256-tgrZh46Y3JaZ+PyFFOnGPVYBjDDetP1k9QAKJlurdVI=",
+    "./_framework/dotnet.js": "sha256-tgrZh46Y3JaZ+PyFFOnGPVYBjDDetP1k9QAKJlurdVI=",
+    "./_framework/dotnet.native.js": "sha256-CU8oL4L0VAwGe3hCyxZDy7keJq9dcsWED0JKqrvlUb4=",
+    "./_framework/dotnet.native.l1ds2rhypd.js": "sha256-CU8oL4L0VAwGe3hCyxZDy7keJq9dcsWED0JKqrvlUb4=",
+    "./_framework/dotnet.runtime.2hocyfcbj2.js": "sha256-5oRcSUQSLbUYyq9jPgwB6domrDHYrvLX+53QxY+0y48=",
+    "./_framework/dotnet.runtime.js": "sha256-5oRcSUQSLbUYyq9jPgwB6domrDHYrvLX+53QxY+0y48=",
+    "./lib/bootstrap/dist/js/bootstrap.3cu83mfmm9.js": "sha256-bUmtdDXoCjqMgfk9wuZKMbIzrm9Q+cKYw1NaL0whME0=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.js": "sha256-FlAazL3M14dosBmHgH4isweRYfO4YRCpIpWEod9yuEE=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.493y06b0oq.js": "sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.js": "sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.u6mj9kewms.js": "sha256-FlAazL3M14dosBmHgH4isweRYfO4YRCpIpWEod9yuEE=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.js": "sha256-ec0S60eXVv6CoNgYLuKeqJrN+NLPnzxKcBFucC5fkwg=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.jj8uyg4cgr.js": "sha256-QZdFT1ZNdly4rmgUBtXmXFS9BU1FTa+sPe6h794sFRQ=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.js": "sha256-QZdFT1ZNdly4rmgUBtXmXFS9BU1FTa+sPe6h794sFRQ=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.zln0jygolg.js": "sha256-ec0S60eXVv6CoNgYLuKeqJrN+NLPnzxKcBFucC5fkwg=",
+    "./lib/bootstrap/dist/js/bootstrap.js": "sha256-bUmtdDXoCjqMgfk9wuZKMbIzrm9Q+cKYw1NaL0whME0=",
+    "./lib/bootstrap/dist/js/bootstrap.min.63fj8s7r0e.js": "sha256-3gQJhtmj7YnV1fmtbVcnAV6eI4ws0Tr48bVZCThtCGQ=",
+    "./lib/bootstrap/dist/js/bootstrap.min.js": "sha256-3gQJhtmj7YnV1fmtbVcnAV6eI4ws0Tr48bVZCThtCGQ="
+  }
+}</script>
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    <script src="lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
+    <script>
+        window.blazorCulture = {
+            get: () => localStorage.getItem('blazorCulture'),
+            set: (value) => localStorage.setItem('blazorCulture', value)
+        };
+        window.blazorDir = {
+            set: (dir) => {
+                document.documentElement.setAttribute('dir', dir);
+                document.documentElement.setAttribute('lang', dir === 'rtl' ? 'ar' : 'en');
+                if (document.body) {
+                    document.body.setAttribute('dir', dir);
+                }
+                applyBootstrapDir(dir);
+            }
+        };
+    </script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>

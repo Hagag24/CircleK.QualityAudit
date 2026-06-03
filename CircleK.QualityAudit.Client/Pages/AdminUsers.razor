@@ -1,0 +1,641 @@
+﻿@page "/admin/users"
+@attribute [Authorize(Policy = PermissionConstants.UserView)]
+@inject IStringLocalizer<AdminUsers> L
+@inject UsersApi UsersApi
+@inject SetupApi SetupApi
+@inject AuthenticationStateProvider AuthProvider
+
+<PageTitle>@L["Title"]</PageTitle>
+
+<div class="ck-page-header">
+    <div>
+        <h1 class="h4 mb-1">@L["Title"]</h1>
+        <div class="text-muted">@L["Subtitle"]</div>
+    </div>
+    @if (CanCreateUser)
+    {
+        <button class="btn btn-danger" @onclick="NewUser">@L["NewUser"]</button>
+    }
+</div>
+
+<div class="ck-studio">
+    <div class="ck-studio-header">
+        <div>
+            <div class="ck-studio-title">@L["StudioTitle"]</div>
+            <div class="ck-studio-subtitle">@L["StudioSubtitle"]</div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-light" @onclick="ReloadUsers">@L["Reload"]</button>
+            @if (CanCreateUser)
+            {
+                <button class="btn btn-danger" @onclick="NewUser">@L["NewUser"]</button>
+            }
+        </div>
+    </div>
+
+    <div class="ck-studio-body">
+        <div class="ck-panel ck-panel-list">
+            <div class="ck-panel-header">
+                <div>
+                    <div class="fw-bold">@L["Users"]</div>
+                    <div class="text-muted small">@string.Format(L["Count"], FilteredUsers.Count)</div>
+                </div>
+            </div>
+            <div class="ck-panel-body">
+                <input class="form-control ck-search" placeholder="@L["SearchPlaceholder"]" @bind="SearchText" />
+
+                @if (IsLoadingUsers)
+                {
+                    <div class="text-center py-3 text-muted">@L["Loading"]</div>
+                }
+                else if (FilteredUsers.Count == 0)
+                {
+                    <div class="ck-empty-sm">@L["EmptyUsers"]</div>
+                }
+                else
+                {
+                    <ul class="ck-list">
+                        @foreach (var user in FilteredUsers)
+                        {
+                            <li class="ck-list-item @(user.Id == SelectedUserId ? "active" : "")" @onclick="() => SelectUser(user)">
+                                <div>
+                                    <div class="fw-semibold">@user.DisplayName</div>
+                                    <div class="small text-muted">@user.Email · @GetRoleLabel(user.Role) · @GetBranchLabel(user)</div>
+                                </div>
+                                <span class="badge @(user.IsActive ? "text-bg-success" : "text-bg-secondary")">@(user.IsActive ? L["Active"] : L["Inactive"])</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+        <div class="ck-panel ck-panel-main">
+            <div class="ck-panel-header">
+                <div>
+                    <div class="fw-bold">@L["Details"]</div>
+                    <div class="text-muted small">@L["DetailsSubtitle"]</div>
+                </div>
+            </div>
+            <div class="ck-panel-body">
+                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    <Alert Color="AlertColor.Danger" Dismissible="true">@ErrorMessage</Alert>
+                }
+
+                @if (IsLoadingDetails)
+                {
+                    <div class="text-center py-3 text-muted">@L["Loading"]</div>
+                }
+                else if (Form is null)
+                {
+                    <div class="ck-empty">@L["EmptySelection"]</div>
+                }
+                else
+                {
+                    <div class="ck-form-grid">
+                        <div>
+                            <label class="form-label">@L["DisplayName"]</label>
+                            <input class="form-control" @bind="Form.DisplayName" disabled="@(!CanEditForm)" />
+                        </div>
+                        <div>
+                            <label class="form-label">@L["Email"]</label>
+                            <input class="form-control" @bind="Form.Email" disabled="@(!CanEditForm)" />
+                        </div>
+                        <div>
+                            <label class="form-label">@L["Role"]</label>
+                            <select class="form-select" @bind="Form.Role" disabled="@(!CanEditForm)">
+                                @foreach (var role in Roles)
+                                {
+                                    <option value="@role">@GetRoleLabel(role)</option>
+                                }
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">@L["Branch"]</label>
+                            <select class="form-select" @onchange="OnBranchChanged" disabled="@(!CanEditForm)">
+                                <option value="" selected="@(Form.BranchId is null)">@L["NoBranch"]</option>
+                                @foreach (var branch in Branches)
+                                {
+                                    <option value="@branch.Id" selected="@(branch.Id == Form.BranchId)">@GetBranchLabel(branch)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="ck-form-toggle">
+                            <input class="form-check-input" type="checkbox" @bind="Form.IsActive" disabled="@(!CanEditForm)" />
+                            <label class="form-check-label">@L["IsActive"]</label>
+                        </div>
+                    </div>
+
+                    @if (IsNewUser)
+                    {
+                        <div class="mt-3">
+                            <label class="form-label">@L["Password"]</label>
+                            <input class="form-control" type="password" @bind="Form.Password" />
+                        </div>
+                    }
+                    else if (CanResetPassword)
+                    {
+                        <div class="mt-3">
+                            <label class="form-label">@L["ResetPassword"]</label>
+                            <input class="form-control" type="password" @bind="Form.NewPassword" placeholder="@L["ResetPasswordHint"]" />
+                        </div>
+                    }
+
+                    <div class="ck-divider"></div>
+
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-semibold">@L["Permissions"]</div>
+                            <div class="small text-muted">@string.Format(L["PermSelectedSummary"], SelectedPermissions.Count, Permissions.Count)</div>
+                        </div>
+
+                        @if (PermissionGroups.Count == 0)
+                        {
+                            <div class="ck-empty-sm">@L["EmptyPermissions"]</div>
+                        }
+                        else
+                        {
+                            <div class="ck-perm-groups">
+                                @foreach (var group in PermissionGroups)
+                                {
+                                    var selectedCount = group.Permissions.Count(p => SelectedPermissions.Contains(p));
+
+                                    <div class="ck-perm-card">
+                                        <div class="ck-perm-card-head">
+                                            <div class="ck-perm-card-title">@GetPermissionGroupLabel(group.Key)</div>
+                                            <div class="ck-perm-card-meta">@string.Format(L["PermGroupSelectedSummary"], selectedCount, group.Permissions.Count)</div>
+                                        </div>
+                                        <div class="ck-perm-grid">
+                                            @foreach (var permission in group.Permissions)
+                                            {
+                                                <label class="form-check ck-perm-check">
+                                                    <input class="form-check-input" type="checkbox" checked="@SelectedPermissions.Contains(permission)" @onchange="(e) => OnPermissionChanged(permission, e)" disabled="@(!CanEditPermissions)" />
+                                                    <span class="form-check-label">@GetPermissionLabel(permission)</span>
+                                                </label>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="ck-form-actions">
+                        <button class="btn btn-primary" @onclick="SaveUser" disabled="@(IsSaving || !CanEditForm)">@L["Save"]</button>
+                        <button class="btn btn-outline-secondary" @onclick="NewUser">@L["Clear"]</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly List<UserListItemDto> Users = new();
+    private readonly List<BranchDto> Branches = new();
+    private readonly List<string> Roles = new();
+    private readonly List<string> Permissions = new();
+    private readonly List<PermissionGroup> PermissionGroups = new();
+
+    private UserFormState? Form;
+    private HashSet<string> SelectedPermissions = new();
+    private string? SelectedUserId;
+    private string? SearchText;
+    private bool IsLoadingUsers;
+    private bool IsLoadingDetails;
+    private bool IsSaving;
+    private string? ErrorMessage;
+
+    private bool IsArabic => System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase);
+    private bool IsNewUser => Form?.Id is null;
+    private bool CanCreateUser;
+    private bool CanUpdateUser;
+    private bool CanResetPassword;
+    private bool CanEditPermissions;
+    private bool CanEditForm => IsNewUser ? CanCreateUser : CanUpdateUser;
+
+    private List<UserListItemDto> FilteredUsers
+        => Users
+            .Where(u => string.IsNullOrWhiteSpace(SearchText) || MatchesSearch(u, SearchText))
+            .OrderBy(u => u.DisplayName)
+            .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        CanCreateUser = user.HasClaim("permission", PermissionConstants.UserCreate);
+        CanUpdateUser = user.HasClaim("permission", PermissionConstants.UserUpdate);
+        CanResetPassword = user.HasClaim("permission", PermissionConstants.UserResetPassword);
+        CanEditPermissions = user.HasClaim("permission", PermissionConstants.UserPermissions);
+
+        await LoadLookupsAsync();
+        await LoadUsersAsync();
+    }
+
+    private async Task LoadLookupsAsync()
+    {
+        Branches.Clear();
+        Branches.AddRange(await SetupApi.GetBranchesAsync(null));
+
+        Roles.Clear();
+        Roles.AddRange(await UsersApi.GetRolesAsync());
+        if (Roles.Count == 0)
+        {
+            Roles.AddRange(new[] { "Admin", "QualityManager", "Inspector", "Viewer" });
+        }
+
+        Permissions.Clear();
+        Permissions.AddRange(await UsersApi.GetPermissionsAsync());
+        if (Permissions.Count == 0)
+        {
+            Permissions.AddRange(GetDefaultPermissions());
+        }
+        BuildPermissionGroups();
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        IsLoadingUsers = true;
+        Users.Clear();
+        Users.AddRange(await UsersApi.GetUsersAsync());
+        IsLoadingUsers = false;
+    }
+
+    private async Task ReloadUsers()
+    {
+        await LoadLookupsAsync();
+        await LoadUsersAsync();
+    }
+
+    private async Task SelectUser(UserListItemDto user)
+    {
+        SelectedUserId = user.Id;
+        await LoadUserAsync(user.Id);
+    }
+
+    private async Task LoadUserAsync(string id)
+    {
+        IsLoadingDetails = true;
+        ErrorMessage = null;
+        var details = await UsersApi.GetUserAsync(id);
+        if (details is null)
+        {
+            ErrorMessage = L["LoadError"];
+            Form = null;
+            SelectedPermissions = new HashSet<string>();
+        }
+        else
+        {
+            Form = new UserFormState
+            {
+                Id = details.Id,
+                DisplayName = details.DisplayName,
+                Email = details.Email,
+                Role = details.Role,
+                BranchId = details.BranchId,
+                IsActive = details.IsActive
+            };
+            SelectedPermissions = new HashSet<string>(details.Permissions);
+        }
+
+        IsLoadingDetails = false;
+    }
+
+    private void NewUser()
+    {
+        if (!CanCreateUser)
+        {
+            ErrorMessage = L["SaveError"];
+            return;
+        }
+
+        SelectedUserId = null;
+        ErrorMessage = null;
+        Form = new UserFormState
+        {
+            DisplayName = string.Empty,
+            Email = string.Empty,
+            Role = Roles.FirstOrDefault() ?? string.Empty,
+            IsActive = true
+        };
+        SelectedPermissions = new HashSet<string>();
+    }
+
+    private async Task SaveUser()
+    {
+        if (Form is null)
+        {
+            return;
+        }
+
+        if (!CanEditForm)
+        {
+            ErrorMessage = L["SaveError"];
+            return;
+        }
+
+        ErrorMessage = null;
+        IsSaving = true;
+
+        if (IsNewUser)
+        {
+            if (string.IsNullOrWhiteSpace(Form.Password))
+            {
+                ErrorMessage = L["PasswordRequired"];
+                IsSaving = false;
+                return;
+            }
+
+            var created = await UsersApi.CreateUserAsync(new CreateUserRequest(
+                Form.DisplayName,
+                Form.Email,
+                Form.Password,
+                Form.Role,
+                Form.BranchId,
+                Form.IsActive));
+
+            if (created is null)
+            {
+                ErrorMessage = L["SaveError"];
+                IsSaving = false;
+                return;
+            }
+
+            if (CanEditPermissions && SelectedPermissions.Count > 0)
+            {
+                await UsersApi.UpdatePermissionsAsync(created.Id, new UpdatePermissionsRequest(SelectedPermissions.ToList()));
+            }
+
+            await LoadUsersAsync();
+            await LoadUserAsync(created.Id);
+            SelectedUserId = created.Id;
+        }
+        else
+        {
+            var updated = await UsersApi.UpdateUserAsync(Form.Id!, new UpdateUserRequest(
+                Form.DisplayName,
+                Form.Email,
+                Form.Role,
+                Form.BranchId,
+                Form.IsActive));
+
+            if (updated is null)
+            {
+                ErrorMessage = L["SaveError"];
+                IsSaving = false;
+                return;
+            }
+
+            if (CanEditPermissions)
+            {
+                await UsersApi.UpdatePermissionsAsync(updated.Id, new UpdatePermissionsRequest(SelectedPermissions.ToList()));
+            }
+
+            if (CanResetPassword && !string.IsNullOrWhiteSpace(Form.NewPassword))
+            {
+                await UsersApi.ResetPasswordAsync(updated.Id, new ResetPasswordRequest(Form.NewPassword));
+                Form.NewPassword = string.Empty;
+            }
+
+            await LoadUsersAsync();
+            await LoadUserAsync(updated.Id);
+            SelectedUserId = updated.Id;
+        }
+
+        IsSaving = false;
+    }
+
+    private void OnBranchChanged(ChangeEventArgs args)
+    {
+        if (Form is null)
+        {
+            return;
+        }
+
+        Form.BranchId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+    }
+
+    private void OnPermissionChanged(string permission, ChangeEventArgs args)
+    {
+        if (!CanEditPermissions)
+        {
+            return;
+        }
+
+        var isChecked = args.Value is bool value
+            ? value
+            : bool.TryParse(args.Value?.ToString(), out var parsed) && parsed;
+        if (isChecked)
+        {
+            SelectedPermissions.Add(permission);
+        }
+        else
+        {
+            SelectedPermissions.Remove(permission);
+        }
+    }
+
+    private bool MatchesSearch(UserListItemDto user, string search)
+    {
+        var term = search.Trim();
+        return user.DisplayName.Contains(term, StringComparison.OrdinalIgnoreCase)
+               || user.Email.Contains(term, StringComparison.OrdinalIgnoreCase)
+               || (user.BranchName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+               || (user.BranchNameAr?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false);
+    }
+
+    private string GetBranchLabel(UserListItemDto user)
+    {
+        if (user.BranchId is null)
+        {
+            return L["NoBranch"];
+        }
+
+        return IsArabic && !string.IsNullOrWhiteSpace(user.BranchNameAr) ? user.BranchNameAr! : user.BranchName ?? L["NoBranch"];
+    }
+
+    private string GetBranchLabel(BranchDto branch)
+        => IsArabic && !string.IsNullOrWhiteSpace(branch.NameAr) ? branch.NameAr! : branch.Name;
+
+    private string GetPermissionLabel(string permission)
+        => permission switch
+        {
+            "Brand.View" => L["PermBrandView"],
+            "Brand.Create" => L["PermBrandCreate"],
+            "Brand.Update" => L["PermBrandUpdate"],
+            "Brand.Delete" => L["PermBrandDelete"],
+            "Branch.View" => L["PermBranchView"],
+            "Branch.Create" => L["PermBranchCreate"],
+            "Branch.Update" => L["PermBranchUpdate"],
+            "Branch.Delete" => L["PermBranchDelete"],
+            "Template.View" => L["PermTemplateView"],
+            "Template.Create" => L["PermTemplateCreate"],
+            "Template.Update" => L["PermTemplateUpdate"],
+            "Template.Delete" => L["PermTemplateDelete"],
+            "Section.Create" => L["PermSectionCreate"],
+            "Section.Update" => L["PermSectionUpdate"],
+            "Section.Delete" => L["PermSectionDelete"],
+            "Item.Create" => L["PermItemCreate"],
+            "Item.Update" => L["PermItemUpdate"],
+            "Item.Delete" => L["PermItemDelete"],
+            "Audit.View" => L["PermAuditView"],
+            "Audit.ViewAll" => L["PermAuditViewAll"],
+            "Audit.Create" => L["PermAuditCreate"],
+            "Audit.Edit" => L["PermAuditEdit"],
+            "Audit.Submit" => L["PermAuditSubmit"],
+            "Report.View" => L["PermReportView"],
+            "Report.Export" => L["PermReportExport"],
+            "User.View" => L["PermUserView"],
+            "User.Create" => L["PermUserCreate"],
+            "User.Update" => L["PermUserUpdate"],
+            "User.ResetPassword" => L["PermUserResetPassword"],
+            "User.Permissions" => L["PermUserPermissions"],
+            "DatabaseBackup.View" => L["PermDatabaseBackupView"],
+            "DatabaseBackup.Create" => L["PermDatabaseBackupCreate"],
+            "DatabaseBackup.Restore" => L["PermDatabaseBackupRestore"],
+            "DatabaseBackup.Schedule" => L["PermDatabaseBackupSchedule"],
+            _ => permission
+        };
+
+    private string GetRoleLabel(string? role)
+        => role switch
+        {
+            "Admin" => L["RoleAdmin"],
+            "QualityManager" => L["RoleQualityManager"],
+            "Inspector" => L["RoleInspector"],
+            "Viewer" => L["RoleViewer"],
+            _ => role ?? string.Empty
+        };
+
+    private string GetPermissionGroupLabel(string key)
+        => key switch
+        {
+            "Brands" => L["PermGroupBrands"],
+            "Branches" => L["PermGroupBranches"],
+            "Templates" => L["PermGroupTemplates"],
+            "Audits" => L["PermGroupAudits"],
+            "Reports" => L["PermGroupReports"],
+            "Users" => L["PermGroupUsers"],
+            "Backups" => L["PermGroupBackups"],
+            _ => L["PermGroupOther"]
+        };
+
+    private void BuildPermissionGroups()
+    {
+        PermissionGroups.Clear();
+
+        var groupDefinitions = new (string Key, string[] Permissions)[]
+        {
+            ("Brands", new[]
+            {
+                "Brand.View", "Brand.Create", "Brand.Update", "Brand.Delete"
+            }),
+            ("Branches", new[]
+            {
+                "Branch.View", "Branch.Create", "Branch.Update", "Branch.Delete"
+            }),
+            ("Templates", new[]
+            {
+                "Template.View", "Template.Create", "Template.Update", "Template.Delete",
+                "Section.Create", "Section.Update", "Section.Delete",
+                "Item.Create", "Item.Update", "Item.Delete"
+            }),
+            ("Audits", new[]
+            {
+                "Audit.View", "Audit.ViewAll", "Audit.Create", "Audit.Edit", "Audit.Submit"
+            }),
+            ("Reports", new[]
+            {
+                "Report.View", "Report.Export"
+            }),
+            ("Users", new[]
+            {
+                "User.View", "User.Create", "User.Update", "User.ResetPassword", "User.Permissions"
+            }),
+            ("Backups", new[]
+            {
+                "DatabaseBackup.View", "DatabaseBackup.Create", "DatabaseBackup.Restore", "DatabaseBackup.Schedule"
+            })
+        };
+
+        var available = Permissions.ToHashSet(StringComparer.Ordinal);
+
+        foreach (var definition in groupDefinitions)
+        {
+            var items = definition.Permissions
+                .Where(permission => available.Contains(permission))
+                .ToList();
+
+            if (items.Count == 0)
+            {
+                continue;
+            }
+
+            PermissionGroups.Add(new PermissionGroup(definition.Key, items));
+            foreach (var item in items)
+            {
+                available.Remove(item);
+            }
+        }
+
+        if (available.Count > 0)
+        {
+            PermissionGroups.Add(new PermissionGroup("Other", available.OrderBy(p => p).ToList()));
+        }
+    }
+
+    private static IReadOnlyList<string> GetDefaultPermissions()
+        => new[]
+        {
+            "Brand.View",
+            "Brand.Create",
+            "Brand.Update",
+            "Brand.Delete",
+            "Branch.View",
+            "Branch.Create",
+            "Branch.Update",
+            "Branch.Delete",
+            "Template.View",
+            "Template.Create",
+            "Template.Update",
+            "Template.Delete",
+            "Section.Create",
+            "Section.Update",
+            "Section.Delete",
+            "Item.Create",
+            "Item.Update",
+            "Item.Delete",
+            "Audit.View",
+            "Audit.ViewAll",
+            "Audit.Create",
+            "Audit.Edit",
+            "Audit.Submit",
+            "Report.View",
+            "Report.Export",
+            "User.View",
+            "User.Create",
+            "User.Update",
+            "User.ResetPassword",
+            "User.Permissions",
+            "DatabaseBackup.View",
+            "DatabaseBackup.Create",
+            "DatabaseBackup.Restore",
+            "DatabaseBackup.Schedule"
+        };
+
+    private sealed class UserFormState
+    {
+        public string? Id { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public Guid? BranchId { get; set; }
+        public bool IsActive { get; set; } = true;
+        public string Password { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+    }
+
+    private sealed record PermissionGroup(string Key, IReadOnlyList<string> Permissions);
+}

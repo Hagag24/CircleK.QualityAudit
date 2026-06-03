@@ -1,0 +1,392 @@
+﻿@page "/reports"
+@attribute [Authorize(Policy = PermissionConstants.ReportView)]
+@inject IStringLocalizer<Reports> L
+@inject ReportApi ReportApi
+@inject SetupApi SetupApi
+@inject AuditApi AuditApi
+@inject NavigationManager Nav
+
+<PageTitle>@L["Title"]</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="ck-page-header">
+        <div>
+            <h1 class="h4 mb-1">@L["Title"]</h1>
+            <div class="text-muted">@L["Subtitle"]</div>
+        </div>
+        <AuthorizeView Policy="@PermissionConstants.ReportExport">
+            <button class="btn btn-outline-primary" @onclick="Export">@L["Export"]</button>
+        </AuthorizeView>
+    </div>
+
+    <div class="card ck-card mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-3">
+                    <label class="form-label">@L["Brand"]</label>
+                    <select class="form-select" @onchange="OnBrandChanged">
+                        <option value="" selected="@(SelectedBrandId is null)">@L["AllBrands"]</option>
+                        @foreach (var brand in Brands)
+                        {
+                            <option value="@brand.Id" selected="@(brand.Id == SelectedBrandId)">@GetBrandLabel(brand)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label">@L["Branch"]</label>
+                    <select class="form-select" @onchange="OnBranchChanged">
+                        <option value="" selected="@(SelectedBranchId is null)">@L["AllBranches"]</option>
+                        @foreach (var branch in Branches)
+                        {
+                            <option value="@branch.Id" selected="@(branch.Id == SelectedBranchId)">@GetBranchOptionLabel(branch)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">@L["Audit"]</label>
+                    <select class="form-select" @onchange="OnAuditChanged">
+                        <option value="" selected="@(SelectedAuditId is null)">@L["AllAudits"]</option>
+                        @foreach (var audit in AuditOptions)
+                        {
+                            <option value="@audit.Id" selected="@(audit.Id == SelectedAuditId)">@GetAuditLabel(audit)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label">@L["From"]</label>
+                    <InputDate class="form-control" @bind-Value="FromDate" />
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label">@L["To"]</label>
+                    <InputDate class="form-control" @bind-Value="ToDate" />
+                </div>
+                <div class="col-12 col-md-5">
+                    <label class="form-label">@L["Search"]</label>
+                    <input class="form-control" placeholder="@L["SearchPlaceholder"]" @bind="SearchText" />
+                </div>
+                <div class="col-12 col-md-3 d-flex gap-2">
+                    <button class="btn btn-outline-secondary flex-fill" @onclick="ResetFilters">@L["Reset"]</button>
+                    <button class="btn btn-primary flex-fill" @onclick="ApplyFilters">@L["Apply"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="text-center py-4 text-muted">@L["Loading"]</div>
+    }
+    else if (Report is null)
+    {
+        <div class="ck-empty">@L["Empty"]</div>
+    }
+    else
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card ck-kpi ck-kpi-danger">
+                    <div class="card-body">
+                        <div class="ck-kpi-title">@L["KpiDanger"]</div>
+                        <div class="ck-kpi-value">@Report.Kpis.DangerBranches</div>
+                        <div class="ck-kpi-meta">@L["KpiBranches"]</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card ck-kpi ck-kpi-warning">
+                    <div class="card-body">
+                        <div class="ck-kpi-title">@L["KpiWarning"]</div>
+                        <div class="ck-kpi-value">@Report.Kpis.WarningBranches</div>
+                        <div class="ck-kpi-meta">@L["KpiBranches"]</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card ck-kpi ck-kpi-safe">
+                    <div class="card-body">
+                        <div class="ck-kpi-title">@L["KpiSafe"]</div>
+                        <div class="ck-kpi-value">@Report.Kpis.SafeBranches</div>
+                        <div class="ck-kpi-meta">@L["KpiBranches"]</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card ck-kpi ck-kpi-total">
+                    <div class="card-body">
+                        <div class="ck-kpi-title">@L["KpiAudits"]</div>
+                        <div class="ck-kpi-value">@Report.Kpis.TotalAudits</div>
+                        <div class="ck-kpi-meta">@GetKpiMetaText()</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12 col-xl-7">
+                <div class="card ck-card">
+                    <div class="card-body">
+                        <h2 class="h6 mb-3">@L["BranchRiskTable"]</h2>
+                        @if (Report.Branches.Count == 0)
+                        {
+                            <div class="ck-empty-sm">@L["Empty"]</div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>@L["TableBranch"]</th>
+                                            <th>@L["TableLastAudit"]</th>
+                                            <th>@L["TableScore"]</th>
+                                            <th>@L["TableCritical"]</th>
+                                            <th>@L["TableRisk"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var row in Report.Branches)
+                                        {
+                                            <tr>
+                                                <td>@GetBranchLabel(row)</td>
+                                                <td>@(row.LastAuditDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                                                <td>@FormatScore(row.TotalScore, row.TotalMax)</td>
+                                                <td>@row.CriticalFailedCount</td>
+                                                <td><span class="@GetRiskBadgeClass(row.RiskLevel)">@GetRiskText(row.RiskLevel)</span></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-5">
+                <div class="card ck-card mb-3">
+                    <div class="card-body">
+                        <h2 class="h6 mb-3">@L["SectionAverages"]</h2>
+                        @if (Report.Sections.Count == 0)
+                        {
+                            <div class="ck-empty-sm">@L["Empty"]</div>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column gap-2">
+                                @foreach (var sectionRow in Report.Sections)
+                                {
+                                    <div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-semibold">@GetSectionLabel(sectionRow)</span>
+                                            <span class="text-muted">@sectionRow.AveragePercent.ToString("0.0")%</span>
+                                        </div>
+                                        <div class="progress" role="progressbar" aria-valuenow="@sectionRow.AveragePercent" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="progress-bar bg-danger" style="width:@sectionRow.AveragePercent%"></div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="card ck-card">
+                    <div class="card-body">
+                        <h2 class="h6 mb-3">@L["CriticalItems"]</h2>
+                        @if (Report.CriticalItems.Count == 0)
+                        {
+                            <div class="ck-empty-sm">@L["Empty"]</div>
+                        }
+                        else
+                        {
+                            <ul class="list-unstyled mb-0">
+                                @foreach (var item in Report.CriticalItems)
+                                {
+                                    <li class="d-flex justify-content-between mb-2">
+                                        <span>@GetItemLabel(item)</span>
+                                        <span class="badge text-bg-danger">@item.FailedCount</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<BrandDto> Brands = new();
+    private readonly List<BranchDto> Branches = new();
+    private readonly List<AuditSummaryDto> AuditOptions = new();
+    private DashboardReportDto? Report;
+    private bool IsLoading;
+
+    private Guid? SelectedBrandId;
+    private Guid? SelectedBranchId;
+    private Guid? SelectedAuditId;
+    private string? SearchText;
+    private DateTime? FromDate;
+    private DateTime? ToDate;
+
+    private bool IsArabic => System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBrandsAsync();
+        await LoadBranchesAsync();
+        await LoadAuditOptionsAsync();
+        await LoadReportsAsync();
+    }
+
+    private async Task LoadBrandsAsync()
+    {
+        Brands.Clear();
+        Brands.AddRange(await SetupApi.GetBrandsAsync());
+    }
+
+    private async Task LoadBranchesAsync()
+    {
+        Branches.Clear();
+        Branches.AddRange(await SetupApi.GetBranchesAsync(SelectedBrandId));
+
+        if (SelectedBranchId.HasValue && Branches.All(b => b.Id != SelectedBranchId.Value))
+        {
+            SelectedBranchId = null;
+            SelectedAuditId = null;
+        }
+    }
+
+    private async Task LoadAuditOptionsAsync()
+    {
+        AuditOptions.Clear();
+        var result = await AuditApi.GetAuditsAsync(new AuditQuery(
+            SelectedBranchId,
+            SelectedBrandId,
+            null,
+            null,
+            null,
+            1,
+            500));
+
+        AuditOptions.AddRange(result.Items);
+
+        if (SelectedAuditId.HasValue && AuditOptions.All(a => a.Id != SelectedAuditId.Value))
+        {
+            SelectedAuditId = null;
+        }
+    }
+
+    private async Task LoadReportsAsync()
+    {
+        IsLoading = true;
+        Report = await ReportApi.GetDashboardAsync(new ReportQuery(SelectedBrandId, FromDate, ToDate, SearchText, SelectedBranchId, SelectedAuditId));
+        IsLoading = false;
+    }
+
+    private async Task OnBrandChanged(ChangeEventArgs args)
+    {
+        SelectedBrandId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        SelectedBranchId = null;
+        SelectedAuditId = null;
+        await LoadBranchesAsync();
+        await LoadAuditOptionsAsync();
+        await LoadReportsAsync();
+    }
+
+    private async Task OnBranchChanged(ChangeEventArgs args)
+    {
+        SelectedBranchId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        SelectedAuditId = null;
+        await LoadAuditOptionsAsync();
+        await LoadReportsAsync();
+    }
+
+    private async Task OnAuditChanged(ChangeEventArgs args)
+    {
+        SelectedAuditId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        await LoadReportsAsync();
+    }
+
+    private async Task ApplyFilters()
+        => await LoadReportsAsync();
+
+    private async Task ResetFilters()
+    {
+        SelectedBrandId = null;
+        SelectedBranchId = null;
+        SelectedAuditId = null;
+        SearchText = null;
+        FromDate = null;
+        ToDate = null;
+        await LoadBranchesAsync();
+        await LoadAuditOptionsAsync();
+        await LoadReportsAsync();
+    }
+
+    private void Export()
+    {
+        var url = ReportApi.BuildExportUrl(new ReportQuery(SelectedBrandId, FromDate, ToDate, SearchText, SelectedBranchId, SelectedAuditId));
+        Nav.NavigateTo(url, true);
+    }
+
+    private string GetBrandLabel(BrandDto brand)
+        => IsArabic && !string.IsNullOrWhiteSpace(brand.NameAr) ? brand.NameAr! : brand.Name;
+
+    private string GetBranchOptionLabel(BranchDto branch)
+        => IsArabic && !string.IsNullOrWhiteSpace(branch.NameAr) ? branch.NameAr! : branch.Name;
+
+    private string GetAuditLabel(AuditSummaryDto audit)
+    {
+        var branchName = IsArabic && !string.IsNullOrWhiteSpace(audit.BranchNameAr)
+            ? audit.BranchNameAr!
+            : audit.BranchName;
+        var shortId = audit.Id.ToString("N")[..8];
+        return $"{audit.Date:yyyy-MM-dd} | {branchName} | {shortId}";
+    }
+
+    private string GetBranchLabel(BranchRiskRowDto row)
+        => IsArabic && !string.IsNullOrWhiteSpace(row.BranchNameAr) ? row.BranchNameAr! : row.BranchName;
+
+    private string GetSectionLabel(SectionAverageDto section)
+        => IsArabic && !string.IsNullOrWhiteSpace(section.SectionNameAr) ? section.SectionNameAr! : section.SectionName;
+
+    private string GetItemLabel(CriticalItemDto item)
+        => IsArabic && !string.IsNullOrWhiteSpace(item.ItemTextAr) ? item.ItemTextAr! : item.ItemText;
+
+    private string FormatScore(int totalScore, int totalMax)
+    {
+        if (totalMax <= 0)
+        {
+            return "-";
+        }
+
+        var percent = Math.Round(totalScore / (double)totalMax * 100);
+        return $"{percent}%";
+    }
+
+    private string GetRiskText(RiskLevel level)
+        => level switch
+        {
+            RiskLevel.Safe => L["RiskSafe"],
+            RiskLevel.Warning => L["RiskWarning"],
+            _ => L["RiskDanger"]
+        };
+
+    private string GetRiskBadgeClass(RiskLevel level)
+        => level switch
+        {
+            RiskLevel.Safe => "badge text-bg-success",
+            RiskLevel.Warning => "badge text-bg-warning",
+            _ => "badge text-bg-danger"
+        };
+
+    private string GetKpiMetaText()
+    {
+        if (SelectedAuditId.HasValue)
+        {
+            return L["KpiSingleAudit"];
+        }
+
+        return FromDate.HasValue || ToDate.HasValue ? L["KpiWindow"] : L["KpiAllTime"];
+    }
+}

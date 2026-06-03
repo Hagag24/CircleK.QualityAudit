@@ -1,0 +1,255 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>User Management</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Manage system accounts, roles, and access.</value>
+  </data>
+  <data name="NewUser" xml:space="preserve">
+    <value>New User</value>
+  </data>
+  <data name="StudioTitle" xml:space="preserve">
+    <value>User Studio</value>
+  </data>
+  <data name="StudioSubtitle" xml:space="preserve">
+    <value>Create accounts, assign roles, and control access.</value>
+  </data>
+  <data name="Reload" xml:space="preserve">
+    <value>Reload</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="Count" xml:space="preserve">
+    <value>{0} users</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search by name, email, or branch</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="EmptyUsers" xml:space="preserve">
+    <value>No users found.</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Inactive" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>User Details</value>
+  </data>
+  <data name="DetailsSubtitle" xml:space="preserve">
+    <value>Update profile, role, and permissions.</value>
+  </data>
+  <data name="EmptySelection" xml:space="preserve">
+    <value>Select a user from the list or create a new one.</value>
+  </data>
+  <data name="DisplayName" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Role" xml:space="preserve">
+    <value>Role</value>
+  </data>
+  <data name="RoleAdmin" xml:space="preserve">
+    <value>Admin</value>
+  </data>
+  <data name="RoleQualityManager" xml:space="preserve">
+    <value>Quality Manager</value>
+  </data>
+  <data name="RoleInspector" xml:space="preserve">
+    <value>Inspector</value>
+  </data>
+  <data name="RoleViewer" xml:space="preserve">
+    <value>Viewer</value>
+  </data>
+  <data name="Branch" xml:space="preserve">
+    <value>Branch</value>
+  </data>
+  <data name="NoBranch" xml:space="preserve">
+    <value>No branch</value>
+  </data>
+  <data name="IsActive" xml:space="preserve">
+    <value>Active account</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Reset password</value>
+  </data>
+  <data name="ResetPasswordHint" xml:space="preserve">
+    <value>Leave blank to keep current password</value>
+  </data>
+  <data name="Permissions" xml:space="preserve">
+    <value>Permissions</value>
+  </data>
+  <data name="EmptyPermissions" xml:space="preserve">
+    <value>No permissions available.</value>
+  </data>
+  <data name="PermSelectedSummary" xml:space="preserve">
+    <value>{0}/{1} selected</value>
+  </data>
+  <data name="PermGroupSelectedSummary" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="PermGroupBrands" xml:space="preserve">
+    <value>Brands</value>
+  </data>
+  <data name="PermGroupBranches" xml:space="preserve">
+    <value>Branches</value>
+  </data>
+  <data name="PermGroupTemplates" xml:space="preserve">
+    <value>Templates, Sections, Items</value>
+  </data>
+  <data name="PermGroupAudits" xml:space="preserve">
+    <value>Audits</value>
+  </data>
+  <data name="PermGroupReports" xml:space="preserve">
+    <value>Reports</value>
+  </data>
+  <data name="PermGroupUsers" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="PermGroupBackups" xml:space="preserve">
+    <value>Database Backups</value>
+  </data>
+  <data name="PermGroupOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save changes</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="LoadError" xml:space="preserve">
+    <value>Unable to load user details.</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Password is required for new users.</value>
+  </data>
+  <data name="SaveError" xml:space="preserve">
+    <value>Unable to save user.</value>
+  </data>
+  <data name="PermBrandView" xml:space="preserve">
+    <value>View brands</value>
+  </data>
+  <data name="PermBrandCreate" xml:space="preserve">
+    <value>Create brands</value>
+  </data>
+  <data name="PermBrandUpdate" xml:space="preserve">
+    <value>Edit brands</value>
+  </data>
+  <data name="PermBrandDelete" xml:space="preserve">
+    <value>Delete brands</value>
+  </data>
+  <data name="PermBranchView" xml:space="preserve">
+    <value>View branches</value>
+  </data>
+  <data name="PermBranchCreate" xml:space="preserve">
+    <value>Create branches</value>
+  </data>
+  <data name="PermBranchUpdate" xml:space="preserve">
+    <value>Edit branches</value>
+  </data>
+  <data name="PermBranchDelete" xml:space="preserve">
+    <value>Delete branches</value>
+  </data>
+  <data name="PermTemplateView" xml:space="preserve">
+    <value>View templates</value>
+  </data>
+  <data name="PermTemplateCreate" xml:space="preserve">
+    <value>Create templates</value>
+  </data>
+  <data name="PermTemplateUpdate" xml:space="preserve">
+    <value>Edit templates</value>
+  </data>
+  <data name="PermTemplateDelete" xml:space="preserve">
+    <value>Delete templates</value>
+  </data>
+  <data name="PermSectionCreate" xml:space="preserve">
+    <value>Create sections</value>
+  </data>
+  <data name="PermSectionUpdate" xml:space="preserve">
+    <value>Edit sections</value>
+  </data>
+  <data name="PermSectionDelete" xml:space="preserve">
+    <value>Delete sections</value>
+  </data>
+  <data name="PermItemCreate" xml:space="preserve">
+    <value>Create items</value>
+  </data>
+  <data name="PermItemUpdate" xml:space="preserve">
+    <value>Edit items</value>
+  </data>
+  <data name="PermItemDelete" xml:space="preserve">
+    <value>Delete items</value>
+  </data>
+  <data name="PermAuditView" xml:space="preserve">
+    <value>View audits</value>
+  </data>
+  <data name="PermAuditViewAll" xml:space="preserve">
+    <value>View all audits</value>
+  </data>
+  <data name="PermAuditCreate" xml:space="preserve">
+    <value>Create audits</value>
+  </data>
+  <data name="PermAuditEdit" xml:space="preserve">
+    <value>Edit audits</value>
+  </data>
+  <data name="PermAuditSubmit" xml:space="preserve">
+    <value>Submit audits</value>
+  </data>
+  <data name="PermReportView" xml:space="preserve">
+    <value>View reports</value>
+  </data>
+  <data name="PermReportExport" xml:space="preserve">
+    <value>Export reports</value>
+  </data>
+  <data name="PermUserView" xml:space="preserve">
+    <value>View users</value>
+  </data>
+  <data name="PermUserCreate" xml:space="preserve">
+    <value>Create users</value>
+  </data>
+  <data name="PermUserUpdate" xml:space="preserve">
+    <value>Edit users</value>
+  </data>
+  <data name="PermUserResetPassword" xml:space="preserve">
+    <value>Reset user passwords</value>
+  </data>
+  <data name="PermUserPermissions" xml:space="preserve">
+    <value>Manage user permissions</value>
+  </data>
+  <data name="PermDatabaseBackupView" xml:space="preserve">
+    <value>View database backups</value>
+  </data>
+  <data name="PermDatabaseBackupCreate" xml:space="preserve">
+    <value>Create database backups</value>
+  </data>
+  <data name="PermDatabaseBackupRestore" xml:space="preserve">
+    <value>Restore database from backup</value>
+  </data>
+  <data name="PermDatabaseBackupSchedule" xml:space="preserve">
+    <value>Manage backup schedule</value>
+  </data>
+</root>

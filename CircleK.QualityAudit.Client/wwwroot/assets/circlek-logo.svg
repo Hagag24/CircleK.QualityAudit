@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Circle K">
+  <defs>
+    <style>
+      .ck-red { fill: #e10600; }
+      .ck-white { fill: #ffffff; font-family: "Arial Black", "Segoe UI", Arial, sans-serif; font-weight: 900; }
+    </style>
+  </defs>
+  <circle class="ck-red" cx="128" cy="128" r="120" />
+  <text class="ck-white" x="128" y="165" font-size="140" text-anchor="middle">K</text>
+</svg>

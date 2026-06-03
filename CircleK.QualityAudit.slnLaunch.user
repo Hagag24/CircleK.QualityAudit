@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "CircleK.QualityAudit.API\\CircleK.QualityAudit.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "CircleK.QualityAudit.Client\\CircleK.QualityAudit.Client.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

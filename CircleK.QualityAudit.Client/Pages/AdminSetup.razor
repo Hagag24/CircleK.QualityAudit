@@ -1,0 +1,1623 @@
+﻿
+@page "/admin/setup"
+@attribute [Authorize(Policy = "Setup.Access")]
+@inject SetupApi Api
+@inject IStringLocalizer<AdminSetup> L
+@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthProvider
+
+<PageTitle>@L["SetupStudio"]</PageTitle>
+
+<div class="ck-studio" dir="@(IsRtl ? "rtl" : "ltr")">
+    <div class="ck-studio-header">
+        <div>
+            <div class="ck-studio-title">@L["SetupStudio"]</div>
+            <div class="ck-studio-subtitle">@L["SetupSubtitle"]</div>
+        </div>
+        <div class="ck-studio-actions">
+            <button class="btn btn-outline-light btn-sm" @onclick="ReloadAsync">
+                <i class="bi bi-arrow-clockwise"></i> @L["Reload"]
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_statusMessage))
+    {
+        <div class="alert alert-info ck-studio-alert" role="alert">@_statusMessage</div>
+    }
+
+    <div class="ck-studio-tabs">
+        @if (HasBrandAccess)
+        {
+            <button class="ck-tab @(ActiveTab == SetupTab.Brands ? "active" : string.Empty)" @onclick="() => SwitchTabAsync(SetupTab.Brands)">
+                <i class="bi bi-badge-tm"></i> @L["Brands"]
+            </button>
+        }
+        @if (HasBranchAccess)
+        {
+            <button class="ck-tab @(ActiveTab == SetupTab.Branches ? "active" : string.Empty)" @onclick="() => SwitchTabAsync(SetupTab.Branches)">
+                <i class="bi bi-diagram-3"></i> @L["Branches"]
+            </button>
+        }
+        @if (HasTemplateAccess)
+        {
+            <button class="ck-tab @(ActiveTab == SetupTab.Templates ? "active" : string.Empty)" @onclick="() => SwitchTabAsync(SetupTab.Templates)">
+                <i class="bi bi-layout-text-window-reverse"></i> @L["Templates"]
+            </button>
+        }
+        @if (HasBackupAccess)
+        {
+            <button class="ck-tab @(ActiveTab == SetupTab.Database ? "active" : string.Empty)" @onclick="() => SwitchTabAsync(SetupTab.Database)">
+                <i class="bi bi-hdd-rack"></i> @L["DatabaseBackups"]
+            </button>
+        }
+    </div>
+
+    <div class="ck-studio-body">
+        @if (ActiveTab == SetupTab.Brands)
+        {
+            <div class="ck-panel ck-panel-list">
+                <div class="ck-panel-header">
+                    <div class="fw-semibold">@L["BrandsList"]</div>
+                    @if (CanCreateBrand)
+                    {
+                        <button class="btn btn-outline-primary btn-sm" @onclick="NewBrand">
+                            <i class="bi bi-plus"></i> @L["NewBrand"]
+                        </button>
+                    }
+                </div>
+                <div class="ck-panel-body">
+                    <input class="form-control form-control-sm ck-search" placeholder="@L["Search"]" @bind="_brandSearch" @bind:event="oninput" />
+                    <ul class="ck-list">
+                        @foreach (var brand in FilterBrands())
+                        {
+                            <li class="ck-list-item @(brand.Id == _selectedBrandId ? "active" : string.Empty)" @onclick="() => SelectBrand(brand)">
+                                <div>
+                                    <div class="fw-semibold">@brand.Name</div>
+                                    <div class="small text-muted">@brand.NameAr</div>
+                                </div>
+                                <span class="badge @(brand.IsActive ? "bg-success" : "bg-secondary")">@(brand.IsActive ? L["Active"] : L["Inactive"])</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="ck-panel ck-panel-main">
+                <div class="ck-panel-header">
+                    <div class="fw-semibold">@L["BrandEditor"]</div>
+                </div>
+                <div class="ck-panel-body">
+                    @if (_brandForm is null)
+                    {
+                        <div class="ck-empty">@L["SelectBrand"]</div>
+                    }
+                    else
+                    {
+                        <div class="ck-form-grid">
+                            <div>
+                                <label class="form-label">@L["Name"]</label>
+                                <input class="form-control" @bind="_brandForm.Name" disabled="@(!CanEditBrand)" />
+                            </div>
+                            <div>
+                                <label class="form-label">@L["NameAr"]</label>
+                                <input class="form-control" @bind="_brandForm.NameAr" disabled="@(!CanEditBrand)" />
+                            </div>
+                            <div>
+                                <label class="form-label">@L["LogoUrl"]</label>
+                                <input class="form-control" @bind="_brandForm.LogoUrl" disabled="@(!CanEditBrand)" />
+                            </div>
+                            <div class="ck-form-toggle">
+                                <input type="checkbox" class="form-check-input" id="brandActive" @bind="_brandForm.IsActive" disabled="@(!CanEditBrand)" />
+                                <label class="form-check-label" for="brandActive">@L["IsActive"]</label>
+                            </div>
+                        </div>
+                        <div class="ck-form-actions">
+                            <button class="btn btn-primary btn-sm" @onclick="SaveBrandAsync" disabled="@(!CanEditBrand)">
+                                <i class="bi bi-save"></i> @(_selectedBrandId is null ? L["Create"] : L["Save"])
+                            </button>
+                            @if (_selectedBrandId is not null && CanDeleteBrand)
+                            {
+                                <button class="btn btn-outline-danger btn-sm" @onclick="DeleteBrandAsync">
+                                    <i class="bi bi-trash"></i> @L["Delete"]
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else if (ActiveTab == SetupTab.Branches)
+        {
+            <div class="ck-panel ck-panel-list">
+                <div class="ck-panel-header">
+                    <div class="fw-semibold">@L["BranchesList"]</div>
+                    @if (CanCreateBranch)
+                    {
+                        <button class="btn btn-outline-primary btn-sm" @onclick="NewBranch">
+                            <i class="bi bi-plus"></i> @L["NewBranch"]
+                        </button>
+                    }
+                </div>
+                <div class="ck-panel-body">
+                    <div class="ck-filter">
+                        <select class="form-select form-select-sm" @onchange="OnBranchBrandFilterChanged">
+                            <option value="">@L["AllBrands"]</option>
+                            @foreach (var brand in _brands)
+                            {
+                                <option value="@brand.Id">@brand.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <input class="form-control form-control-sm ck-search" placeholder="@L["Search"]" @bind="_branchSearch" @bind:event="oninput" />
+                    <ul class="ck-list">
+                        @foreach (var branch in FilterBranches())
+                        {
+                            <li class="ck-list-item @(branch.Id == _selectedBranchId ? "active" : string.Empty)" @onclick="() => SelectBranch(branch)">
+                                <div>
+                                    <div class="fw-semibold">@branch.Name</div>
+                                    <div class="small text-muted">@branch.BrandName</div>
+                                </div>
+                                <span class="badge @(branch.IsActive ? "bg-success" : "bg-secondary")">@(branch.IsActive ? L["Active"] : L["Inactive"])</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="ck-panel ck-panel-main">
+                <div class="ck-panel-header">
+                    <div class="fw-semibold">@L["BranchEditor"]</div>
+                </div>
+                <div class="ck-panel-body">
+                    @if (_branchForm is null)
+                    {
+                        <div class="ck-empty">@L["SelectBranch"]</div>
+                    }
+                    else
+                    {
+                        <div class="ck-form-grid">
+                            <div>
+                                <label class="form-label">@L["Brand"]</label>
+                                <select class="form-select" @bind="_branchForm.BrandId" disabled="@(!CanEditBranch)">
+                                    <option value="">@L["SelectBrand"]</option>
+                                    @foreach (var brand in _brands)
+                                    {
+                                        <option value="@brand.Id">@brand.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">@L["Name"]</label>
+                                <input class="form-control" @bind="_branchForm.Name" disabled="@(!CanEditBranch)" />
+                            </div>
+                            <div>
+                                <label class="form-label">@L["NameAr"]</label>
+                                <input class="form-control" @bind="_branchForm.NameAr" disabled="@(!CanEditBranch)" />
+                            </div>
+                            <div>
+                                <label class="form-label">@L["Region"]</label>
+                                <input class="form-control" @bind="_branchForm.Region" disabled="@(!CanEditBranch)" />
+                            </div>
+                            <div>
+                                <label class="form-label">@L["ManagerName"]</label>
+                                <input class="form-control" @bind="_branchForm.ManagerName" disabled="@(!CanEditBranch)" />
+                            </div>
+                            <div>
+                                <label class="form-label">@L["EmployeeCount"]</label>
+                                <input type="number" class="form-control" @bind="_branchForm.EmployeeCount" disabled="@(!CanEditBranch)" />
+                            </div>
+                            <div class="ck-form-toggle">
+                                <input type="checkbox" class="form-check-input" id="branchActive" @bind="_branchForm.IsActive" disabled="@(!CanEditBranch)" />
+                                <label class="form-check-label" for="branchActive">@L["IsActive"]</label>
+                            </div>
+                        </div>
+                        <div class="ck-form-actions">
+                            <button class="btn btn-primary btn-sm" @onclick="SaveBranchAsync" disabled="@(!CanEditBranch)">
+                                <i class="bi bi-save"></i> @(_selectedBranchId is null ? L["Create"] : L["Save"])
+                            </button>
+                            @if (_selectedBranchId is not null && CanDeleteBranch)
+                            {
+                                <button class="btn btn-outline-danger btn-sm" @onclick="DeleteBranchAsync">
+                                    <i class="bi bi-trash"></i> @L["Delete"]
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else if (ActiveTab == SetupTab.Templates)
+        {
+            <div class="ck-panel ck-panel-list">
+                <div class="ck-panel-header">
+                    <div class="fw-semibold">@L["TemplatesList"]</div>
+                    @if (CanCreateTemplate)
+                    {
+                        <button class="btn btn-outline-primary btn-sm" @onclick="NewTemplate">
+                            <i class="bi bi-plus"></i> @L["NewTemplate"]
+                        </button>
+                    }
+                </div>
+                <div class="ck-panel-body">
+                    <div class="ck-filter">
+                        <select class="form-select form-select-sm" @onchange="OnTemplateBrandFilterChanged">
+                            <option value="">@L["AllBrands"]</option>
+                            @foreach (var brand in _brands)
+                            {
+                                <option value="@brand.Id">@brand.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <input class="form-control form-control-sm ck-search" placeholder="@L["Search"]" @bind="_templateSearch" @bind:event="oninput" />
+                    <ul class="ck-list">
+                        @foreach (var template in FilterTemplates())
+                        {
+                            <li class="ck-list-item @(template.Id == _selectedTemplateId ? "active" : string.Empty)" @onclick="() => SelectTemplateAsync(template)">
+                                <div>
+                                    <div class="fw-semibold">@template.Name</div>
+                                    <div class="small text-muted">@L["Sections"]: @template.SectionCount • @L["Items"]: @template.ItemCount</div>
+                                </div>
+                                <span class="badge @(template.IsActive ? "bg-success" : "bg-secondary")">@(template.IsActive ? L["Active"] : L["Inactive"])</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="ck-panel ck-panel-main">
+                <div class="ck-panel-header">
+                    <div class="fw-semibold">@L["TemplateStudio"]</div>
+                </div>
+                <div class="ck-panel-body">
+                    @if (_templateForm is null)
+                    {
+                        <div class="ck-empty">@L["SelectTemplate"]</div>
+                    }
+                    else
+                    {
+                        <div class="ck-form-grid">
+                            <div>
+                                <label class="form-label">@L["Brand"]</label>
+                                <select class="form-select" @bind="_templateForm.BrandId" disabled="@(!CanEditTemplate)">
+                                    <option value="">@L["SelectBrand"]</option>
+                                    @foreach (var brand in _brands)
+                                    {
+                                        <option value="@brand.Id">@brand.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">@L["Name"]</label>
+                                <input class="form-control" @bind="_templateForm.Name" disabled="@(!CanEditTemplate)" />
+                            </div>
+                            <div>
+                                <label class="form-label">@L["Version"]</label>
+                                <input type="number" class="form-control" @bind="_templateForm.Version" disabled="@(!CanEditTemplate)" />
+                            </div>
+                            <div class="ck-form-toggle">
+                                <input type="checkbox" class="form-check-input" id="templateActive" @bind="_templateForm.IsActive" disabled="@(!CanEditTemplate)" />
+                                <label class="form-check-label" for="templateActive">@L["IsActive"]</label>
+                            </div>
+                        </div>
+                        <div class="ck-form-actions">
+                            <button class="btn btn-primary btn-sm" @onclick="SaveTemplateAsync" disabled="@(!CanEditTemplate)">
+                                <i class="bi bi-save"></i> @(_selectedTemplateId is null ? L["Create"] : L["Save"])
+                            </button>
+                            @if (_selectedTemplateId is not null && CanDeleteTemplate)
+                            {
+                                <button class="btn btn-outline-danger btn-sm" @onclick="DeleteTemplateAsync">
+                                    <i class="bi bi-trash"></i> @L["Delete"]
+                                </button>
+                            }
+                        </div>
+
+                        <div class="ck-divider"></div>
+                        <div class="ck-builder-header">
+                            <div class="fw-semibold">@L["SectionsBuilder"]</div>
+                            @if (CanCreateSection)
+                            {
+                                <button class="btn btn-outline-primary btn-sm" @onclick="StartNewSection">
+                                    <i class="bi bi-plus"></i> @L["AddSection"]
+                                </button>
+                            }
+                        </div>
+
+                        @if (_templateDetails is null)
+                        {
+                            <div class="ck-empty">@L["SelectTemplate"]</div>
+                        }
+                        else if (_templateDetails.Sections.Count == 0)
+                        {
+                            <div class="ck-empty">@L["NoSections"]</div>
+                        }
+                        else
+                        {
+                            <div class="ck-section-list">
+                                @foreach (var sec in _templateDetails.Sections.OrderBy(s => s.Order))
+                                {
+                                    <details class="ck-section" open>
+                                        <summary>
+                                            <div>
+                                                <div class="fw-semibold">@sec.Name</div>
+                                                <div class="small text-muted">@L["Items"]: @(sec.Items?.Count ?? 0) • @L["TotalWop"]: @sec.MaxScore</div>
+                                            </div>
+                                            <div class="ck-section-actions">
+                                                @if (CanUpdateSection)
+                                                {
+                                                    <button class="btn btn-outline-secondary btn-sm ck-icon-btn" @onclick="() => MoveSectionAsync(sec.Id, -1)" @onclick:stopPropagation="true">
+                                                        <i class="bi bi-arrow-up"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary btn-sm ck-icon-btn" @onclick="() => MoveSectionAsync(sec.Id, 1)" @onclick:stopPropagation="true">
+                                                        <i class="bi bi-arrow-down"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary btn-sm" @onclick="() => EditSection(sec)">@L["Edit"]</button>
+                                                }
+                                                @if (CanDeleteSection)
+                                                {
+                                                    <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteSectionAsync(sec)">@L["Delete"]</button>
+                                                }
+                                            </div>
+                                        </summary>
+                                        @if (_sectionForm is not null && _editingSectionId == sec.Id)
+                                        {
+                                            <div class="ck-section-form">
+                                                <div class="fw-semibold">@L["EditSection"]</div>
+                                                <div class="ck-form-grid">
+                                                    <div>
+                                                        <label class="form-label">@L["Name"]</label>
+                                                        <input class="form-control" @bind="_sectionForm.Name" disabled="@(!CanEditSection)" />
+                                                    </div>
+                                                    <div>
+                                                        <label class="form-label">@L["NameAr"]</label>
+                                                        <input class="form-control" @bind="_sectionForm.NameAr" disabled="@(!CanEditSection)" />
+                                                    </div>
+                                                    <div>
+                                                        <label class="form-label">@L["Order"]</label>
+                                                        <input type="number" class="form-control" @bind="_sectionForm.Order" disabled="@(!CanEditSection)" />
+                                                    </div>
+                                                </div>
+                                                <div class="ck-form-actions">
+                                                    <button type="button" class="btn btn-primary btn-sm" @onclick="SaveSectionAsync" disabled="@(!CanEditSection)">@L["Save"]</button>
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="CancelSection">@L["Cancel"]</button>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="ck-section-body">
+                                            @if (sec.Items is { Count: > 0 })
+                                            {
+                                                <div class="ck-item-list">
+                                                    @foreach (var item in sec.Items.OrderBy(i => i.Order))
+                                                    {
+                                                        <div class="ck-item">
+                                                            <div>
+                                                                <div class="fw-semibold">@item.Text</div>
+                                                                <div class="small text-muted">@item.TextAr</div>
+                                                            </div>
+                                                            <div class="ck-item-meta">
+                                                                @if (item.IsCritical)
+                                                                {
+                                                                    <span class="badge bg-danger">@L["Critical"]</span>
+                                                                }
+                                                                @if (item.RequiresTiming)
+                                                                {
+                                                                    <span class="badge bg-info">@L["RequiresTiming"]</span>
+                                                                }
+                                                                <span class="badge bg-light text-dark">@L["Wop"]: @item.Wop</span>
+                                                                @if (CanUpdateItem)
+                                                                {
+                                                                    <button class="btn btn-sm btn-outline-secondary ck-icon-btn" @onclick="() => MoveItemAsync(sec.Id, item.Id, -1)">
+                                                                        <i class="bi bi-arrow-up"></i>
+                                                                    </button>
+                                                                    <button class="btn btn-sm btn-outline-secondary ck-icon-btn" @onclick="() => MoveItemAsync(sec.Id, item.Id, 1)">
+                                                                        <i class="bi bi-arrow-down"></i>
+                                                                    </button>
+                                                                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => EditItem(sec.Id, item)">@L["Edit"]</button>
+                                                                }
+                                                                @if (CanDeleteItem)
+                                                                {
+                                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteItemAsync(item)">@L["Delete"]</button>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        @if (_itemForms.TryGetValue(sec.Id, out var itemForm) && itemForm.AnchorItemId == item.Id)
+                                                        {
+                                                            <div class="ck-item-form">
+                                                                <div class="ck-form-grid">
+                                                                    <div>
+                                                                        <label class="form-label">@L["ItemText"]</label>
+                                                                        <input class="form-control" @bind="itemForm.Text" disabled="@(!CanEditItemForm(itemForm))" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label class="form-label">@L["ItemTextAr"]</label>
+                                                                        <input class="form-control" @bind="itemForm.TextAr" disabled="@(!CanEditItemForm(itemForm))" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label class="form-label">@L["Wop"]</label>
+                                                                        <input type="number" class="form-control" @bind="itemForm.Wop" disabled="@(!CanEditItemForm(itemForm))" />
+                                                                    </div>
+                                                                    <div class="ck-form-toggle">
+                                                                        <input type="checkbox" class="form-check-input" id="critical-@item.Id" @bind="itemForm.IsCritical" disabled="@(!CanEditItemForm(itemForm))" />
+                                                                        <label class="form-check-label" for="critical-@item.Id">@L["Critical"]</label>
+                                                                    </div>
+                                                                    <div class="ck-form-toggle">
+                                                                        <input type="checkbox" class="form-check-input" id="timing-@item.Id" @bind="itemForm.RequiresTiming" disabled="@(!CanEditItemForm(itemForm))" />
+                                                                        <label class="form-check-label" for="timing-@item.Id">@L["RequiresTiming"]</label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ck-form-actions">
+                                                                    <button type="button" class="btn btn-primary btn-sm" @onclick="() => SaveItemAsync(sec.Id)" disabled="@(!CanEditItemForm(itemForm))">@L["Save"]</button>
+                                                                    <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="() => CancelItem(sec.Id)">@L["Cancel"]</button>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="ck-empty-sm">@L["NoItems"]</div>
+                                            }
+
+                                            <div class="ck-item-form">
+                                                @if (_itemForms.TryGetValue(sec.Id, out var newItemForm) && newItemForm.AnchorItemId is null)
+                                                {
+                                                    <div class="ck-form-grid">
+                                                        <div>
+                                                            <label class="form-label">@L["ItemText"]</label>
+                                                            <input class="form-control" @bind="newItemForm.Text" disabled="@(!CanEditItemForm(newItemForm))" />
+                                                        </div>
+                                                        <div>
+                                                            <label class="form-label">@L["ItemTextAr"]</label>
+                                                            <input class="form-control" @bind="newItemForm.TextAr" disabled="@(!CanEditItemForm(newItemForm))" />
+                                                        </div>
+                                                        <div>
+                                                            <label class="form-label">@L["Wop"]</label>
+                                                            <input type="number" class="form-control" @bind="newItemForm.Wop" disabled="@(!CanEditItemForm(newItemForm))" />
+                                                        </div>
+                                                        <div class="ck-form-toggle">
+                                                            <input type="checkbox" class="form-check-input" id="critical-new-@sec.Id" @bind="newItemForm.IsCritical" disabled="@(!CanEditItemForm(newItemForm))" />
+                                                            <label class="form-check-label" for="critical-new-@sec.Id">@L["Critical"]</label>
+                                                        </div>
+                                                        <div class="ck-form-toggle">
+                                                            <input type="checkbox" class="form-check-input" id="timing-new-@sec.Id" @bind="newItemForm.RequiresTiming" disabled="@(!CanEditItemForm(newItemForm))" />
+                                                            <label class="form-check-label" for="timing-new-@sec.Id">@L["RequiresTiming"]</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="ck-form-actions">
+                                                        <button type="button" class="btn btn-primary btn-sm" @onclick="() => SaveItemAsync(sec.Id)" disabled="@(!CanEditItemForm(newItemForm))">@L["Save"]</button>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="() => CancelItem(sec.Id)">@L["Cancel"]</button>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    @if (!_itemForms.ContainsKey(sec.Id) && CanCreateItem)
+                                                    {
+                                                        <button type="button" class="btn btn-outline-primary btn-sm" @onclick="() => StartNewItem(sec.Id)">
+                                                            <i class="bi bi-plus"></i> @L["AddItem"]
+                                                        </button>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </details>
+                                }
+                            </div>
+                        }
+
+                        @if (_sectionForm is not null && _editingSectionId is null)
+                        {
+                            <div class="ck-section-form">
+                                <div class="fw-semibold">@(_editingSectionId is null ? L["NewSection"] : L["EditSection"])</div>
+                                <div class="ck-form-grid">
+                                    <div>
+                                        <label class="form-label">@L["Name"]</label>
+                                        <input class="form-control" @bind="_sectionForm.Name" disabled="@(!CanEditSection)" />
+                                    </div>
+                                    <div>
+                                        <label class="form-label">@L["NameAr"]</label>
+                                        <input class="form-control" @bind="_sectionForm.NameAr" disabled="@(!CanEditSection)" />
+                                    </div>
+                                    <div>
+                                        <label class="form-label">@L["Order"]</label>
+                                        <input type="number" class="form-control" @bind="_sectionForm.Order" disabled="@(!CanEditSection)" />
+                                    </div>
+                                </div>
+                                <div class="ck-form-actions">
+                                    <button type="button" class="btn btn-primary btn-sm" @onclick="SaveSectionAsync" disabled="@(!CanEditSection)">@L["Save"]</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="CancelSection">@L["Cancel"]</button>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="ck-panel ck-panel-list">
+                <div class="ck-panel-header">
+                    <div class="fw-semibold">@L["BackupSchedule"]</div>
+                </div>
+                <div class="ck-panel-body">
+                    @if (!CanViewBackup)
+                    {
+                        <div class="ck-empty">@L["NoBackupPermission"]</div>
+                    }
+                    else if (_backupScheduleForm is null)
+                    {
+                        <div class="text-muted">@L["LoadingSchedule"]</div>
+                    }
+                    else
+                    {
+                        <div class="ck-form-grid">
+                            <div class="ck-form-toggle">
+                                <input type="checkbox" class="form-check-input" id="backupEnabled" @bind="_backupScheduleForm.IsEnabled" disabled="@(!CanScheduleBackup)" />
+                                <label class="form-check-label" for="backupEnabled">@L["BackupEnabled"]</label>
+                            </div>
+                            <div>
+                                <label class="form-label">@L["ScheduleMode"]</label>
+                                <select class="form-select" @bind="_backupScheduleForm.Mode" disabled="@(!CanScheduleBackup)">
+                                    <option value="@BackupScheduleMode.Daily">@L["ScheduleDaily"]</option>
+                                    <option value="@BackupScheduleMode.IntervalHours">@L["ScheduleInterval"]</option>
+                                </select>
+                            </div>
+                            @if (_backupScheduleForm.Mode == BackupScheduleMode.Daily)
+                            {
+                                <div>
+                                    <label class="form-label">@L["ScheduleTime"]</label>
+                                    <input type="text" class="form-control" @bind="_backupScheduleForm.Time" placeholder="HH:mm" disabled="@(!CanScheduleBackup)" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    <label class="form-label">@L["IntervalHours"]</label>
+                                    <input type="number" min="1" max="24" class="form-control" @bind="_backupScheduleForm.IntervalHours" disabled="@(!CanScheduleBackup)" />
+                                </div>
+                            }
+                            <div>
+                                <label class="form-label">@L["LastRun"]</label>
+                                <input class="form-control" value="@FormatDateTime(_backupScheduleForm.LastRunAtUtc)" readonly />
+                            </div>
+                            <div>
+                                <label class="form-label">@L["NextRun"]</label>
+                                <input class="form-control" value="@FormatDateTime(_backupScheduleForm.NextRunAtUtc)" readonly />
+                            </div>
+                        </div>
+                        <div class="ck-form-actions">
+                            <button class="btn btn-primary btn-sm" @onclick="SaveBackupScheduleAsync" disabled="@(!CanScheduleBackup || _isSavingSchedule)">
+                                <i class="bi bi-save"></i> @L["SaveSchedule"]
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="ck-panel ck-panel-main">
+                <div class="ck-panel-header">
+                    <div class="fw-semibold">@L["BackupHistory"]</div>
+                    @if (CanCreateBackup)
+                    {
+                        <button class="btn btn-primary btn-sm" @onclick="CreateBackupAsync" disabled="@_isCreatingBackup">
+                            <i class="bi bi-cloud-download"></i> @L["CreateBackup"]
+                        </button>
+                    }
+                </div>
+                <div class="ck-panel-body">
+                    @if (_backupDashboard is null)
+                    {
+                        <div class="text-muted">@L["LoadingBackups"]</div>
+                    }
+                    else
+                    {
+                        <div class="small text-muted mb-3">
+                            <div><strong>@L["DatabaseName"]:</strong> @_backupDashboard.DatabaseName</div>
+                            <div><strong>@L["BackupPath"]:</strong> @_backupDashboard.BackupRootPath</div>
+                        </div>
+
+                        @if (_backupDashboard.Records.Count == 0)
+                        {
+                            <div class="ck-empty">@L["NoBackups"]</div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>@L["BackupDate"]</th>
+                                            <th>@L["BackupFile"]</th>
+                                            <th>@L["BackupSize"]</th>
+                                            <th>@L["BackupSource"]</th>
+                                            <th>@L["BackupStatus"]</th>
+                                            <th>@L["BackupBy"]</th>
+                                            <th class="text-end">@L["Actions"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var backup in _backupDashboard.Records)
+                                        {
+                                            <tr>
+                                                <td>@FormatDateTime(backup.CreatedAtUtc)</td>
+                                                <td>
+                                                    <div class="fw-semibold">@backup.FileName</div>
+                                                    <div class="small text-muted">@backup.FilePath</div>
+                                                    @if (!string.IsNullOrWhiteSpace(backup.Note))
+                                                    {
+                                                        <div class="small text-muted">@backup.Note</div>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(backup.ErrorMessage))
+                                                    {
+                                                        <div class="small text-danger">@backup.ErrorMessage</div>
+                                                    }
+                                                </td>
+                                                <td>@FormatSize(backup.FileSizeBytes)</td>
+                                                <td>@GetBackupSourceText(backup.TriggerType)</td>
+                                                <td>
+                                                    <span class="badge @(backup.Status == BackupRecordStatus.Success ? "bg-success" : "bg-danger")">
+                                                        @GetBackupStatusText(backup.Status)
+                                                    </span>
+                                                </td>
+                                                <td>@(backup.RequestedByDisplayName ?? "-")</td>
+                                                <td class="text-end">
+                                                    @if (CanRestoreBackup)
+                                                    {
+                                                        <button class="btn btn-outline-danger btn-sm"
+                                                                @onclick="() => RestoreBackupAsync(backup)"
+                                                                disabled="@(_isRestoringBackup || backup.Status != BackupRecordStatus.Success)">
+                                                            <i class="bi bi-arrow-repeat"></i> @L["RestoreBackup"]
+                                                        </button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+@code {
+    private enum SetupTab { Brands, Branches, Templates, Database }
+
+    private bool IsRtl => System.Globalization.CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
+
+    private SetupTab ActiveTab = SetupTab.Brands;
+    private readonly Dictionary<Guid, ItemFormState> _itemForms = new();
+
+    private List<BrandDto> _brands = new();
+    private List<BranchDto> _branches = new();
+    private List<TemplateListDto> _templates = new();
+    private TemplateDetailsDto? _templateDetails;
+
+    private Guid? _selectedBrandId;
+    private Guid? _selectedBranchId;
+    private Guid? _selectedTemplateId;
+
+    private BrandFormState? _brandForm;
+    private BranchFormState? _branchForm;
+    private TemplateFormState? _templateForm;
+    private SectionFormState? _sectionForm;
+    private Guid? _editingSectionId;
+
+    private string _brandSearch = string.Empty;
+    private string _branchSearch = string.Empty;
+    private string _templateSearch = string.Empty;
+    private Guid? _branchFilterBrandId;
+    private Guid? _templateFilterBrandId;
+    private string? _statusMessage;
+    private DatabaseBackupDashboardDto? _backupDashboard;
+    private BackupScheduleFormState? _backupScheduleForm;
+    private bool _isCreatingBackup;
+    private bool _isRestoringBackup;
+    private bool _isSavingSchedule;
+
+    private bool CanViewBrand;
+    private bool CanCreateBrand;
+    private bool CanUpdateBrand;
+    private bool CanDeleteBrand;
+    private bool CanViewBranch;
+    private bool CanCreateBranch;
+    private bool CanUpdateBranch;
+    private bool CanDeleteBranch;
+    private bool CanViewTemplate;
+    private bool CanCreateTemplate;
+    private bool CanUpdateTemplate;
+    private bool CanDeleteTemplate;
+    private bool CanCreateSection;
+    private bool CanUpdateSection;
+    private bool CanDeleteSection;
+    private bool CanCreateItem;
+    private bool CanUpdateItem;
+    private bool CanDeleteItem;
+    private bool CanViewBackup;
+    private bool CanCreateBackup;
+    private bool CanRestoreBackup;
+    private bool CanScheduleBackup;
+
+    private bool HasBrandAccess => CanViewBrand || CanCreateBrand || CanUpdateBrand || CanDeleteBrand;
+    private bool HasBranchAccess => CanViewBranch || CanCreateBranch || CanUpdateBranch || CanDeleteBranch;
+    private bool HasTemplateAccess => CanViewTemplate || CanCreateTemplate || CanUpdateTemplate || CanDeleteTemplate || CanCreateSection || CanUpdateSection || CanDeleteSection || CanCreateItem || CanUpdateItem || CanDeleteItem;
+    private bool HasBackupAccess => CanViewBackup || CanCreateBackup || CanRestoreBackup || CanScheduleBackup;
+    private bool CanEditBrand => _selectedBrandId is null ? CanCreateBrand : CanUpdateBrand;
+    private bool CanEditBranch => _selectedBranchId is null ? CanCreateBranch : CanUpdateBranch;
+    private bool CanEditTemplate => _selectedTemplateId is null ? CanCreateTemplate : CanUpdateTemplate;
+    private bool CanEditSection => _editingSectionId is null ? CanCreateSection : CanUpdateSection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        CanViewBrand = user.HasClaim("permission", PermissionConstants.BrandView);
+        CanCreateBrand = user.HasClaim("permission", PermissionConstants.BrandCreate);
+        CanUpdateBrand = user.HasClaim("permission", PermissionConstants.BrandUpdate);
+        CanDeleteBrand = user.HasClaim("permission", PermissionConstants.BrandDelete);
+        CanViewBranch = user.HasClaim("permission", PermissionConstants.BranchView);
+        CanCreateBranch = user.HasClaim("permission", PermissionConstants.BranchCreate);
+        CanUpdateBranch = user.HasClaim("permission", PermissionConstants.BranchUpdate);
+        CanDeleteBranch = user.HasClaim("permission", PermissionConstants.BranchDelete);
+        CanViewTemplate = user.HasClaim("permission", PermissionConstants.TemplateView);
+        CanCreateTemplate = user.HasClaim("permission", PermissionConstants.TemplateCreate);
+        CanUpdateTemplate = user.HasClaim("permission", PermissionConstants.TemplateUpdate);
+        CanDeleteTemplate = user.HasClaim("permission", PermissionConstants.TemplateDelete);
+        CanCreateSection = user.HasClaim("permission", PermissionConstants.SectionCreate);
+        CanUpdateSection = user.HasClaim("permission", PermissionConstants.SectionUpdate);
+        CanDeleteSection = user.HasClaim("permission", PermissionConstants.SectionDelete);
+        CanCreateItem = user.HasClaim("permission", PermissionConstants.ItemCreate);
+        CanUpdateItem = user.HasClaim("permission", PermissionConstants.ItemUpdate);
+        CanDeleteItem = user.HasClaim("permission", PermissionConstants.ItemDelete);
+        CanViewBackup = user.HasClaim("permission", PermissionConstants.DatabaseBackupView);
+        CanCreateBackup = user.HasClaim("permission", PermissionConstants.DatabaseBackupCreate);
+        CanRestoreBackup = user.HasClaim("permission", PermissionConstants.DatabaseBackupRestore);
+        CanScheduleBackup = user.HasClaim("permission", PermissionConstants.DatabaseBackupSchedule);
+
+        if (!HasBrandAccess && HasBranchAccess)
+        {
+            ActiveTab = SetupTab.Branches;
+        }
+        else if (!HasBrandAccess && !HasBranchAccess && HasTemplateAccess)
+        {
+            ActiveTab = SetupTab.Templates;
+        }
+        else if (!HasBrandAccess && !HasBranchAccess && !HasTemplateAccess && HasBackupAccess)
+        {
+            ActiveTab = SetupTab.Database;
+        }
+
+        await LoadBrandsAsync();
+        await LoadBranchesAsync();
+        await LoadTemplatesAsync();
+        await LoadBackupDashboardAsync();
+    }
+
+    private async Task SwitchTabAsync(SetupTab tab)
+    {
+        if (tab == SetupTab.Brands && !HasBrandAccess)
+        {
+            return;
+        }
+
+        if (tab == SetupTab.Branches && !HasBranchAccess)
+        {
+            return;
+        }
+
+        if (tab == SetupTab.Templates && !HasTemplateAccess)
+        {
+            return;
+        }
+
+        if (tab == SetupTab.Database && !HasBackupAccess)
+        {
+            return;
+        }
+
+        ActiveTab = tab;
+        if (tab == SetupTab.Database)
+        {
+            await LoadBackupDashboardAsync();
+        }
+    }
+
+    private async Task ReloadAsync()
+    {
+        _statusMessage = null;
+        await LoadBrandsAsync();
+        await LoadBranchesAsync();
+        await LoadTemplatesAsync();
+        await LoadBackupDashboardAsync();
+        _statusMessage = L["Reloaded"];
+    }
+
+    private async Task LoadBrandsAsync()
+    {
+        if (!HasBrandAccess || !CanViewBrand)
+        {
+            _brands = new List<BrandDto>();
+            return;
+        }
+
+        _brands = (await Api.GetBrandsAsync()).ToList();
+        if (_selectedBrandId is not null)
+        {
+            var selected = _brands.FirstOrDefault(b => b.Id == _selectedBrandId.Value);
+            if (selected is not null)
+            {
+                SelectBrand(selected);
+            }
+        }
+    }
+
+    private async Task LoadBranchesAsync()
+    {
+        if (!HasBranchAccess || !CanViewBranch)
+        {
+            _branches = new List<BranchDto>();
+            return;
+        }
+
+        _branches = (await Api.GetBranchesAsync(_branchFilterBrandId)).ToList();
+        if (_selectedBranchId is not null)
+        {
+            var selected = _branches.FirstOrDefault(b => b.Id == _selectedBranchId.Value);
+            if (selected is not null)
+            {
+                SelectBranch(selected);
+            }
+        }
+    }
+
+    private async Task LoadTemplatesAsync()
+    {
+        if (!HasTemplateAccess || !CanViewTemplate)
+        {
+            _templates = new List<TemplateListDto>();
+            _templateDetails = null;
+            return;
+        }
+
+        _templates = (await Api.GetTemplatesAsync(_templateFilterBrandId)).ToList();
+        if (_selectedTemplateId is not null)
+        {
+            var selected = _templates.FirstOrDefault(t => t.Id == _selectedTemplateId.Value);
+            if (selected is not null)
+            {
+                await SelectTemplateAsync(selected);
+            }
+        }
+    }
+
+    private IEnumerable<BrandDto> FilterBrands() =>
+        string.IsNullOrWhiteSpace(_brandSearch)
+            ? _brands
+            : _brands.Where(b => b.Name.Contains(_brandSearch, StringComparison.OrdinalIgnoreCase)
+                                 || (b.NameAr?.Contains(_brandSearch, StringComparison.OrdinalIgnoreCase) ?? false));
+
+    private IEnumerable<BranchDto> FilterBranches() =>
+        string.IsNullOrWhiteSpace(_branchSearch)
+            ? _branches
+            : _branches.Where(b => b.Name.Contains(_branchSearch, StringComparison.OrdinalIgnoreCase)
+                                   || (b.NameAr?.Contains(_branchSearch, StringComparison.OrdinalIgnoreCase) ?? false)
+                                   || (b.BrandName?.Contains(_branchSearch, StringComparison.OrdinalIgnoreCase) ?? false));
+
+    private IEnumerable<TemplateListDto> FilterTemplates() =>
+        string.IsNullOrWhiteSpace(_templateSearch)
+            ? _templates
+            : _templates.Where(t => t.Name.Contains(_templateSearch, StringComparison.OrdinalIgnoreCase));
+
+    private void NewBrand()
+    {
+        if (!CanCreateBrand)
+        {
+            return;
+        }
+
+        _selectedBrandId = null;
+        _brandForm = new BrandFormState();
+    }
+
+    private void SelectBrand(BrandDto brand)
+    {
+        _selectedBrandId = brand.Id;
+        _brandForm = new BrandFormState
+        {
+            Name = brand.Name,
+            NameAr = brand.NameAr,
+            LogoUrl = brand.LogoUrl,
+            IsActive = brand.IsActive
+        };
+    }
+
+    private async Task SaveBrandAsync()
+    {
+        if (_brandForm is null || string.IsNullOrWhiteSpace(_brandForm.Name))
+        {
+            return;
+        }
+
+        if (!CanEditBrand)
+        {
+            return;
+        }
+
+        if (_selectedBrandId is null)
+        {
+            var created = await Api.CreateBrandAsync(new CreateBrandRequest(_brandForm.Name, _brandForm.NameAr, _brandForm.LogoUrl, _brandForm.IsActive));
+            if (created is not null)
+            {
+                _selectedBrandId = created.Id;
+            }
+        }
+        else
+        {
+            await Api.UpdateBrandAsync(_selectedBrandId.Value, new UpdateBrandRequest(_brandForm.Name, _brandForm.NameAr, _brandForm.LogoUrl, _brandForm.IsActive));
+        }
+
+        await LoadBrandsAsync();
+    }
+
+    private async Task DeleteBrandAsync()
+    {
+        if (_selectedBrandId is null)
+        {
+            return;
+        }
+
+        if (!CanDeleteBrand)
+        {
+            return;
+        }
+
+        var confirmed = await ConfirmAsync(L["ConfirmDelete"].Value);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await Api.DeleteBrandAsync(_selectedBrandId.Value);
+        _selectedBrandId = null;
+        _brandForm = null;
+        await LoadBrandsAsync();
+    }
+    private void NewBranch()
+    {
+        if (!CanCreateBranch)
+        {
+            return;
+        }
+
+        _selectedBranchId = null;
+        _branchForm = new BranchFormState
+        {
+            BrandId = _brands.FirstOrDefault()?.Id
+        };
+    }
+
+    private void SelectBranch(BranchDto branch)
+    {
+        _selectedBranchId = branch.Id;
+        _branchForm = new BranchFormState
+        {
+            BrandId = branch.BrandId,
+            Name = branch.Name,
+            NameAr = branch.NameAr,
+            Region = branch.Region,
+            ManagerName = branch.ManagerName,
+            EmployeeCount = branch.EmployeeCount,
+            IsActive = branch.IsActive
+        };
+    }
+
+    private async Task SaveBranchAsync()
+    {
+        if (_branchForm is null || _branchForm.BrandId is null || string.IsNullOrWhiteSpace(_branchForm.Name))
+        {
+            return;
+        }
+
+        if (!CanEditBranch)
+        {
+            return;
+        }
+
+        if (_selectedBranchId is null)
+        {
+            var created = await Api.CreateBranchAsync(new CreateBranchRequest(_branchForm.BrandId.Value, _branchForm.Name, _branchForm.NameAr, _branchForm.Region, _branchForm.ManagerName, _branchForm.EmployeeCount, _branchForm.IsActive));
+            if (created is not null)
+            {
+                _selectedBranchId = created.Id;
+            }
+        }
+        else
+        {
+            await Api.UpdateBranchAsync(_selectedBranchId.Value, new UpdateBranchRequest(_branchForm.BrandId.Value, _branchForm.Name, _branchForm.NameAr, _branchForm.Region, _branchForm.ManagerName, _branchForm.EmployeeCount, _branchForm.IsActive));
+        }
+
+        await LoadBranchesAsync();
+    }
+
+    private async Task DeleteBranchAsync()
+    {
+        if (_selectedBranchId is null)
+        {
+            return;
+        }
+
+        if (!CanDeleteBranch)
+        {
+            return;
+        }
+
+        var confirmed = await ConfirmAsync(L["ConfirmDelete"].Value);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await Api.DeleteBranchAsync(_selectedBranchId.Value);
+        _selectedBranchId = null;
+        _branchForm = null;
+        await LoadBranchesAsync();
+    }
+
+    private async Task OnBranchBrandFilterChanged(ChangeEventArgs args)
+    {
+        _branchFilterBrandId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        await LoadBranchesAsync();
+    }
+
+    private void NewTemplate()
+    {
+        if (!CanCreateTemplate)
+        {
+            return;
+        }
+
+        _selectedTemplateId = null;
+        _templateDetails = null;
+        _templateForm = new TemplateFormState
+        {
+            BrandId = _brands.FirstOrDefault()?.Id,
+            Version = 1,
+            IsActive = true
+        };
+    }
+
+    private async Task SelectTemplateAsync(TemplateListDto template)
+    {
+        _selectedTemplateId = template.Id;
+        _templateForm = new TemplateFormState
+        {
+            BrandId = template.BrandId,
+            Name = template.Name,
+            Version = template.Version,
+            IsActive = template.IsActive
+        };
+
+        _templateDetails = await Api.GetTemplateAsync(template.Id);
+        _sectionForm = null;
+        _editingSectionId = null;
+        _itemForms.Clear();
+    }
+
+    private async Task SaveTemplateAsync()
+    {
+        if (_templateForm is null || _templateForm.BrandId is null || string.IsNullOrWhiteSpace(_templateForm.Name))
+        {
+            return;
+        }
+
+        if (!CanEditTemplate)
+        {
+            return;
+        }
+
+        if (_selectedTemplateId is null)
+        {
+            var created = await Api.CreateTemplateAsync(new CreateTemplateRequest(_templateForm.BrandId.Value, _templateForm.Name, _templateForm.Version, _templateForm.IsActive));
+            if (created is not null)
+            {
+                _selectedTemplateId = created.Id;
+                await SelectTemplateAsync(created);
+            }
+        }
+        else
+        {
+            await Api.UpdateTemplateAsync(_selectedTemplateId.Value, new UpdateTemplateRequest(_templateForm.Name, _templateForm.Version, _templateForm.IsActive));
+            await LoadTemplatesAsync();
+            if (_selectedTemplateId is not null)
+            {
+                var selected = _templates.FirstOrDefault(t => t.Id == _selectedTemplateId.Value);
+                if (selected is not null)
+                {
+                    await SelectTemplateAsync(selected);
+                }
+            }
+        }
+
+        await LoadTemplatesAsync();
+    }
+
+    private async Task DeleteTemplateAsync()
+    {
+        if (_selectedTemplateId is null)
+        {
+            return;
+        }
+
+        if (!CanDeleteTemplate)
+        {
+            return;
+        }
+
+        var confirmed = await ConfirmAsync(L["ConfirmDelete"].Value);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await Api.DeleteTemplateAsync(_selectedTemplateId.Value);
+        _selectedTemplateId = null;
+        _templateForm = null;
+        _templateDetails = null;
+        await LoadTemplatesAsync();
+    }
+
+    private async Task OnTemplateBrandFilterChanged(ChangeEventArgs args)
+    {
+        _templateFilterBrandId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        await LoadTemplatesAsync();
+    }
+
+    private void StartNewSection()
+    {
+        if (_selectedTemplateId is null)
+        {
+            return;
+        }
+
+        if (!CanCreateSection)
+        {
+            return;
+        }
+
+        _editingSectionId = null;
+        _sectionForm = new SectionFormState { Order = 1 };
+    }
+
+    private void EditSection(SectionDto section)
+    {
+        if (!CanUpdateSection)
+        {
+            return;
+        }
+
+        _editingSectionId = section.Id;
+        _sectionForm = new SectionFormState
+        {
+            Name = section.Name,
+            NameAr = section.NameAr,
+            Order = section.Order
+        };
+    }
+
+    private async Task SaveSectionAsync()
+    {
+        if (_sectionForm is null || _selectedTemplateId is null || string.IsNullOrWhiteSpace(_sectionForm.Name))
+        {
+            return;
+        }
+
+        if (!CanEditSection)
+        {
+            return;
+        }
+
+        if (_editingSectionId is null)
+        {
+            await Api.AddSectionAsync(_selectedTemplateId.Value, new CreateSectionRequest(_sectionForm.Name, _sectionForm.NameAr, _sectionForm.Order));
+        }
+        else
+        {
+            await Api.UpdateSectionAsync(_editingSectionId.Value, new UpdateSectionRequest(_sectionForm.Name, _sectionForm.NameAr, _sectionForm.Order));
+        }
+
+        _sectionForm = null;
+        _editingSectionId = null;
+        await ReloadSelectedTemplateAsync();
+    }
+
+    private void CancelSection()
+    {
+        _sectionForm = null;
+        _editingSectionId = null;
+    }
+
+    private async Task DeleteSectionAsync(SectionDto section)
+    {
+        if (!CanDeleteSection)
+        {
+            return;
+        }
+
+        var confirmed = await ConfirmAsync(L["ConfirmDelete"].Value);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await Api.DeleteSectionAsync(section.Id);
+        await ReloadSelectedTemplateAsync();
+    }
+
+    private async Task MoveSectionAsync(Guid sectionId, int delta)
+    {
+        if (!CanUpdateSection)
+        {
+            return;
+        }
+
+        if (_templateDetails is null)
+        {
+            return;
+        }
+
+        var ordered = _templateDetails.Sections.OrderBy(s => s.Order).ToList();
+        var index = ordered.FindIndex(s => s.Id == sectionId);
+        var targetIndex = index + delta;
+        if (index < 0 || targetIndex < 0 || targetIndex >= ordered.Count)
+        {
+            return;
+        }
+
+        (ordered[index], ordered[targetIndex]) = (ordered[targetIndex], ordered[index]);
+        var reordered = ordered.Select((s, idx) => s with { Order = idx + 1 }).ToList();
+
+        await Api.ReorderSectionsAsync(new ReorderRequest(reordered.Select(s => new ReorderItem(s.Id, s.Order)).ToList()));
+
+        _templateDetails = new TemplateDetailsDto(
+            _templateDetails.Id,
+            _templateDetails.BrandId,
+            _templateDetails.Name,
+            _templateDetails.Version,
+            _templateDetails.IsActive,
+            reordered);
+    }
+
+    private bool CanEditItemForm(ItemFormState form)
+        => form.ItemId is null ? CanCreateItem : CanUpdateItem;
+
+    private void StartNewItem(Guid sectionId)
+    {
+        if (!CanCreateItem)
+        {
+            return;
+        }
+
+        _itemForms[sectionId] = new ItemFormState
+        {
+            AnchorItemId = null
+        };
+    }
+
+    private void EditItem(Guid sectionId, ItemDto item)
+    {
+        if (!CanUpdateItem)
+        {
+            return;
+        }
+
+        _itemForms[sectionId] = new ItemFormState
+        {
+            AnchorItemId = item.Id,
+            ItemId = item.Id,
+            Text = item.Text,
+            TextAr = item.TextAr,
+            Wop = item.Wop,
+            IsCritical = item.IsCritical,
+            RequiresTiming = item.RequiresTiming,
+            Order = item.Order
+        };
+    }
+
+    private async Task SaveItemAsync(Guid sectionId)
+    {
+        if (!_itemForms.TryGetValue(sectionId, out var form) || string.IsNullOrWhiteSpace(form.Text))
+        {
+            return;
+        }
+
+        if (!CanEditItemForm(form))
+        {
+            return;
+        }
+
+        if (form.ItemId is null)
+        {
+            await Api.AddItemAsync(sectionId, new CreateItemRequest(form.Text, form.TextAr, form.Wop, form.IsCritical, form.RequiresTiming, null));
+        }
+        else
+        {
+            await Api.UpdateItemAsync(form.ItemId.Value, new UpdateItemRequest(form.Text, form.TextAr, form.Wop, form.IsCritical, form.RequiresTiming, form.Order));
+        }
+
+        _itemForms.Remove(sectionId);
+        await ReloadSelectedTemplateAsync();
+    }
+
+    private void CancelItem(Guid sectionId)
+    {
+        _itemForms.Remove(sectionId);
+    }
+
+    private async Task DeleteItemAsync(ItemDto item)
+    {
+        if (!CanDeleteItem)
+        {
+            return;
+        }
+
+        var confirmed = await ConfirmAsync(L["ConfirmDelete"].Value);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await Api.DeleteItemAsync(item.Id);
+        await ReloadSelectedTemplateAsync();
+    }
+
+    private async Task MoveItemAsync(Guid sectionId, Guid itemId, int delta)
+    {
+        if (!CanUpdateItem)
+        {
+            return;
+        }
+
+        if (_templateDetails is null)
+        {
+            return;
+        }
+
+        var sections = _templateDetails.Sections.ToList();
+        var section = sections.FirstOrDefault(s => s.Id == sectionId);
+        if (section?.Items is null)
+        {
+            return;
+        }
+
+        var ordered = section.Items.OrderBy(i => i.Order).ToList();
+        var index = ordered.FindIndex(i => i.Id == itemId);
+        var targetIndex = index + delta;
+        if (index < 0 || targetIndex < 0 || targetIndex >= ordered.Count)
+        {
+            return;
+        }
+
+        (ordered[index], ordered[targetIndex]) = (ordered[targetIndex], ordered[index]);
+        var reordered = ordered.Select((i, idx) => i with { Order = idx + 1 }).ToList();
+
+        await Api.ReorderItemsAsync(new ReorderRequest(reordered.Select(i => new ReorderItem(i.Id, i.Order)).ToList()));
+
+        var updatedSection = section with { Items = reordered };
+        var updatedSections = sections.Select(s => s.Id == sectionId ? updatedSection : s).ToList();
+        _templateDetails = new TemplateDetailsDto(
+            _templateDetails.Id,
+            _templateDetails.BrandId,
+            _templateDetails.Name,
+            _templateDetails.Version,
+            _templateDetails.IsActive,
+            updatedSections);
+    }
+    private async Task ReloadSelectedTemplateAsync()
+    {
+        if (_selectedTemplateId is null)
+        {
+            return;
+        }
+
+        _templateDetails = await Api.GetTemplateAsync(_selectedTemplateId.Value);
+    }
+
+    private async Task LoadBackupDashboardAsync()
+    {
+        if (!HasBackupAccess || !CanViewBackup)
+        {
+            _backupDashboard = null;
+            _backupScheduleForm = null;
+            return;
+        }
+
+        _backupDashboard = await Api.GetDatabaseBackupDashboardAsync();
+        if (_backupDashboard?.Schedule is not null)
+        {
+            _backupScheduleForm = new BackupScheduleFormState
+            {
+                IsEnabled = _backupDashboard.Schedule.IsEnabled,
+                Mode = _backupDashboard.Schedule.Mode,
+                Time = $"{_backupDashboard.Schedule.Hour:00}:{_backupDashboard.Schedule.Minute:00}",
+                IntervalHours = Math.Max(1, _backupDashboard.Schedule.IntervalHours),
+                LastRunAtUtc = _backupDashboard.Schedule.LastRunAtUtc,
+                NextRunAtUtc = _backupDashboard.Schedule.NextRunAtUtc
+            };
+        }
+        else
+        {
+            _backupScheduleForm = null;
+        }
+    }
+
+    private async Task CreateBackupAsync()
+    {
+        if (!CanCreateBackup)
+        {
+            return;
+        }
+
+        _isCreatingBackup = true;
+        _statusMessage = null;
+
+        var result = await Api.CreateDatabaseBackupAsync(new CreateDatabaseBackupRequest(null));
+        _isCreatingBackup = false;
+
+        if (result is null)
+        {
+            _statusMessage = L["BackupCreateFailed"];
+        }
+        else if (result.Status == BackupRecordStatus.Failed)
+        {
+            _statusMessage = string.IsNullOrWhiteSpace(result.ErrorMessage)
+                ? L["BackupCreateFailed"]
+                : result.ErrorMessage;
+        }
+        else
+        {
+            _statusMessage = L["BackupCreateSuccess"];
+        }
+
+        await LoadBackupDashboardAsync();
+    }
+
+    private async Task RestoreBackupAsync(DatabaseBackupRecordDto backup)
+    {
+        if (!CanRestoreBackup || backup.Status != BackupRecordStatus.Success)
+        {
+            return;
+        }
+
+        var confirmMessage = string.Format(L["ConfirmRestore"].Value, backup.FileName);
+        var confirmed = await ConfirmAsync(confirmMessage);
+        if (!confirmed)
+        {
+            return;
+        }
+
+        _isRestoringBackup = true;
+        _statusMessage = null;
+
+        var result = await Api.RestoreDatabaseBackupAsync(backup.Id);
+        _isRestoringBackup = false;
+
+        _statusMessage = result.Success
+            ? L["BackupRestoreSuccess"]
+            : (!string.IsNullOrWhiteSpace(result.Error) ? result.Error : L["BackupRestoreFailed"].Value);
+    }
+
+    private async Task SaveBackupScheduleAsync()
+    {
+        if (!CanScheduleBackup || _backupScheduleForm is null)
+        {
+            return;
+        }
+
+        var parts = (_backupScheduleForm.Time ?? string.Empty).Split(':', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var hour = parts.Length > 0 && int.TryParse(parts[0], out var parsedHour) ? parsedHour : 2;
+        var minute = parts.Length > 1 && int.TryParse(parts[1], out var parsedMinute) ? parsedMinute : 0;
+
+        _isSavingSchedule = true;
+        _statusMessage = null;
+
+        var schedule = await Api.UpdateDatabaseBackupScheduleAsync(new UpdateDatabaseBackupScheduleRequest(
+            _backupScheduleForm.IsEnabled,
+            _backupScheduleForm.Mode,
+            hour,
+            minute,
+            _backupScheduleForm.IntervalHours));
+
+        _isSavingSchedule = false;
+
+        if (schedule is null)
+        {
+            _statusMessage = L["BackupScheduleFailed"];
+            return;
+        }
+
+        _statusMessage = L["BackupScheduleSaved"];
+        await LoadBackupDashboardAsync();
+    }
+
+    private string GetBackupSourceText(BackupTriggerType trigger)
+        => trigger == BackupTriggerType.Scheduled ? L["BackupSourceScheduled"] : L["BackupSourceManual"];
+
+    private string GetBackupStatusText(BackupRecordStatus status)
+        => status == BackupRecordStatus.Success ? L["BackupStatusSuccess"] : L["BackupStatusFailed"];
+
+    private string FormatDateTime(DateTime? value)
+        => value.HasValue
+            ? value.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+            : "-";
+
+    private string FormatDateTime(DateTime value)
+        => value.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes <= 0)
+        {
+            return "-";
+        }
+
+        var megabytes = bytes / 1024d / 1024d;
+        return $"{megabytes:0.##} MB";
+    }
+
+    private async Task<bool> ConfirmAsync(string message)
+        => await JS.InvokeAsync<bool>("confirm", message);
+
+    private sealed class BackupScheduleFormState
+    {
+        public bool IsEnabled { get; set; }
+        public BackupScheduleMode Mode { get; set; } = BackupScheduleMode.Daily;
+        public string Time { get; set; } = "02:00";
+        public int IntervalHours { get; set; } = 24;
+        public DateTime? LastRunAtUtc { get; set; }
+        public DateTime? NextRunAtUtc { get; set; }
+    }
+
+    private sealed class BrandFormState
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? NameAr { get; set; }
+        public string? LogoUrl { get; set; }
+        public bool IsActive { get; set; } = true;
+    }
+
+    private sealed class BranchFormState
+    {
+        public Guid? BrandId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? NameAr { get; set; }
+        public string? Region { get; set; }
+        public string? ManagerName { get; set; }
+        public int? EmployeeCount { get; set; }
+        public bool IsActive { get; set; } = true;
+    }
+
+    private sealed class TemplateFormState
+    {
+        public Guid? BrandId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int Version { get; set; } = 1;
+        public bool IsActive { get; set; } = true;
+    }
+
+    private sealed class SectionFormState
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? NameAr { get; set; }
+        public int Order { get; set; } = 1;
+    }
+
+    private sealed class ItemFormState
+    {
+        public Guid? AnchorItemId { get; set; }
+        public Guid? ItemId { get; set; }
+        public string Text { get; set; } = string.Empty;
+        public string? TextAr { get; set; }
+        public int Wop { get; set; } = 1;
+        public int Order { get; set; } = 1;
+        public bool IsCritical { get; set; }
+        public bool RequiresTiming { get; set; }
+    }
+}

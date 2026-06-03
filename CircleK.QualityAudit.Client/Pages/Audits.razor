@@ -1,0 +1,270 @@
+@page "/audits"
+@attribute [Authorize(Policy = "Audit.ViewAny")]
+@inject IStringLocalizer<Audits> L
+@inject AuditApi AuditApi
+@inject SetupApi SetupApi
+@inject NavigationManager Nav
+
+<PageTitle>@L["Title"]</PageTitle>
+
+<div class="ck-page-header">
+    <div>
+        <h1 class="h4 mb-1">@L["Title"]</h1>
+        <div class="text-muted">@L["Subtitle"]</div>
+    </div>
+    <AuthorizeView Policy="@PermissionConstants.AuditCreate">
+        <button class="btn btn-danger" @onclick='() => Nav.NavigateTo("audits/new")'>@L["NewAudit"]</button>
+    </AuthorizeView>
+</div>
+
+<div class="card ck-card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-3">
+                <label class="form-label">@L["Brand"]</label>
+                <select class="form-select" @onchange="OnBrandChanged">
+                    <option value="" selected="@(SelectedBrandId is null)">@L["AllBrands"]</option>
+                    @foreach (var brand in Brands)
+                    {
+                        <option value="@brand.Id" selected="@(brand.Id == SelectedBrandId)">@GetBrandLabel(brand)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label">@L["Branch"]</label>
+                <select class="form-select" @onchange="OnBranchChanged">
+                    <option value="" selected="@(SelectedBranchId is null)">@L["AllBranches"]</option>
+                    @foreach (var branch in Branches)
+                    {
+                        <option value="@branch.Id" selected="@(branch.Id == SelectedBranchId)">@GetBranchLabel(branch)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label">@L["Status"]</label>
+                <select class="form-select" @bind="SelectedStatus">
+                    <option value="">@L["AllStatuses"]</option>
+                    <option value="@AuditStatus.Draft">@L["StatusDraft"]</option>
+                    <option value="@AuditStatus.Submitted">@L["StatusSubmitted"]</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-3 d-flex gap-2">
+                <button class="btn btn-outline-secondary flex-fill" @onclick="ResetFilters">@L["Reset"]</button>
+                <button class="btn btn-primary flex-fill" @onclick="ApplyFilters">@L["Search"]</button>
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label">@L["From"]</label>
+                <InputDate class="form-control" @bind-Value="FromDate" />
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label">@L["To"]</label>
+                <InputDate class="form-control" @bind-Value="ToDate" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (IsLoading)
+{
+    <div class="text-center py-4 text-muted">@L["Loading"]</div>
+}
+else if (AuditRows.Count == 0)
+{
+    <div class="ck-empty">@L["Empty"]</div>
+}
+else
+{
+    <div class="card ck-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>@L["TableBranch"]</th>
+                        <th>@L["TableTemplate"]</th>
+                        <th>@L["TableDate"]</th>
+                        <th>@L["TableInspector"]</th>
+                        <th>@L["TableScore"]</th>
+                        <th>@L["TableStatus"]</th>
+                        <th>@L["TableRisk"]</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var audit in AuditRows)
+                    {
+                        <tr>
+                            <td>@GetBranchName(audit)</td>
+                            <td>@audit.TemplateName</td>
+                            <td>@audit.Date.ToString("yyyy-MM-dd")</td>
+                            <td>@audit.InspectorName</td>
+                            <td>@FormatScore(audit)</td>
+                            <td><span class="badge bg-secondary">@GetStatusText(audit.Status)</span></td>
+                            <td><span class="@GetRiskBadgeClass(audit.RiskLevel)">@GetRiskText(audit.RiskLevel)</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary" @onclick='() => Nav.NavigateTo($"audits/{audit.Id}")'>@L["View"]</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <button class="btn btn-outline-secondary btn-sm" @onclick="PrevPage" disabled="@(Page <= 1)">@L["Prev"]</button>
+        <span class="text-muted">@string.Format(L["Page"], Page, TotalPages)</span>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="NextPage" disabled="@(Page >= TotalPages)">@L["Next"]</button>
+    </div>
+}
+
+@code {
+    private readonly List<BrandDto> Brands = new();
+    private readonly List<BranchDto> Branches = new();
+    private readonly List<AuditSummaryDto> AuditRows = new();
+
+    private Guid? SelectedBrandId;
+    private Guid? SelectedBranchId;
+    private AuditStatus? SelectedStatus;
+    private DateTime? FromDate;
+    private DateTime? ToDate;
+
+    private bool IsLoading;
+    private int Page = 1;
+    private const int PageSize = 20;
+    private int TotalCount;
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalCount / (double)PageSize));
+    private bool IsArabic => System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBrandsAsync();
+        await LoadBranchesAsync();
+        await LoadAuditsAsync();
+    }
+
+    private async Task LoadBrandsAsync()
+    {
+        Brands.Clear();
+        Brands.AddRange(await SetupApi.GetBrandsAsync());
+    }
+
+    private async Task LoadBranchesAsync()
+    {
+        Branches.Clear();
+        Branches.AddRange(await SetupApi.GetBranchesAsync(SelectedBrandId));
+    }
+
+    private async Task LoadAuditsAsync()
+    {
+        IsLoading = true;
+        AuditRows.Clear();
+
+        var result = await AuditApi.GetAuditsAsync(new AuditQuery(
+            SelectedBranchId,
+            SelectedBrandId,
+            FromDate,
+            ToDate,
+            SelectedStatus,
+            Page,
+            PageSize));
+
+        AuditRows.AddRange(result.Items);
+        TotalCount = result.TotalCount;
+        IsLoading = false;
+    }
+
+    private async Task OnBrandChanged(ChangeEventArgs args)
+    {
+        SelectedBrandId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        SelectedBranchId = null;
+        Page = 1;
+        await LoadBranchesAsync();
+        await LoadAuditsAsync();
+    }
+
+    private async Task OnBranchChanged(ChangeEventArgs args)
+    {
+        SelectedBranchId = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        Page = 1;
+        await LoadAuditsAsync();
+    }
+
+    private async Task ApplyFilters()
+    {
+        Page = 1;
+        await LoadAuditsAsync();
+    }
+
+    private async Task ResetFilters()
+    {
+        SelectedBrandId = null;
+        SelectedBranchId = null;
+        SelectedStatus = null;
+        FromDate = null;
+        ToDate = null;
+        Page = 1;
+        await LoadBranchesAsync();
+        await LoadAuditsAsync();
+    }
+
+    private async Task PrevPage()
+    {
+        if (Page <= 1)
+        {
+            return;
+        }
+
+        Page--;
+        await LoadAuditsAsync();
+    }
+
+    private async Task NextPage()
+    {
+        if (Page >= TotalPages)
+        {
+            return;
+        }
+
+        Page++;
+        await LoadAuditsAsync();
+    }
+
+    private string GetBranchName(AuditSummaryDto audit)
+        => IsArabic && !string.IsNullOrWhiteSpace(audit.BranchNameAr) ? audit.BranchNameAr! : audit.BranchName;
+
+    private string GetBrandLabel(BrandDto brand)
+        => IsArabic && !string.IsNullOrWhiteSpace(brand.NameAr) ? brand.NameAr! : brand.Name;
+
+    private string GetBranchLabel(BranchDto branch)
+        => IsArabic && !string.IsNullOrWhiteSpace(branch.NameAr) ? branch.NameAr! : branch.Name;
+
+    private string FormatScore(AuditSummaryDto audit)
+    {
+        if (audit.TotalMax <= 0)
+        {
+            return "-";
+        }
+
+        var percent = Math.Round(audit.TotalScore / (double)audit.TotalMax * 100);
+        return $"{percent}%";
+    }
+
+    private string GetStatusText(AuditStatus status)
+        => status == AuditStatus.Submitted ? L["StatusSubmitted"] : L["StatusDraft"];
+
+    private string GetRiskText(RiskLevel level)
+        => level switch
+        {
+            RiskLevel.Safe => L["RiskSafe"],
+            RiskLevel.Warning => L["RiskWarning"],
+            _ => L["RiskDanger"]
+        };
+
+    private string GetRiskBadgeClass(RiskLevel level)
+        => level switch
+        {
+            RiskLevel.Safe => "badge text-bg-success",
+            RiskLevel.Warning => "badge text-bg-warning",
+            _ => "badge text-bg-danger"
+        };
+}
